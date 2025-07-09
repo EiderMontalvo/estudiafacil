@@ -711,25 +711,25 @@ class AuthManager {
     
     AuthUtils.logWithIcon('CONFIGURANDO BOTÓN LOGIN', 'loading');
     
-    // Remover listeners previos
-    const newBtn = loginBtn.cloneNode(true);
-    loginBtn.parentNode.replaceChild(newBtn, loginBtn);
+    // No reemplazar el botón, solo limpiar listeners anteriores
+    // y agregar el nuevo sin romper las referencias DOM
+    loginBtn.onclick = null; // Limpiar onclick anterior
     
-    newBtn.disabled = false;
-    newBtn.innerHTML = `
+    loginBtn.disabled = false;
+    loginBtn.innerHTML = `
       <div class="btn-icon" style="color: var(--neon-cyan);">
         ${SVGIcons.login}
       </div>
       <span class="btn-text">Iniciar Sesión</span>
     `;
-    newBtn.style.opacity = '1';
+    loginBtn.style.opacity = '1';
     
-    // Nuevo listener
-    newBtn.addEventListener('click', (e) => {
+    // Usar la función global para mantener consistencia
+    loginBtn.onclick = (e) => {
       e.preventDefault();
       e.stopPropagation();
       
-      AuthUtils.logWithIcon('CLICK EN LOGIN', 'user');
+      AuthUtils.logWithIcon('CLICK EN LOGIN BUTTON', 'user');
       
       if (loginInProgress) {
         AuthUtils.showToast('Login en progreso...', 'warning');
@@ -738,8 +738,8 @@ class AuthManager {
       
       AuthUtils.clearRedirectState();
       
-      newBtn.disabled = true;
-      newBtn.innerHTML = `
+      loginBtn.disabled = true;
+      loginBtn.innerHTML = `
         <div class="btn-icon animate-spin" style="color: var(--neon-cyan);">
           ${SVGIcons.loading}
         </div>
@@ -750,7 +750,7 @@ class AuthManager {
         console.error('❌ Error en click de login:', error);
         AuthManager.handleLoginError(error);
       });
-    });
+    };
     
     AuthUtils.logWithIcon('Botón login configurado', 'success');
   }
@@ -1021,6 +1021,17 @@ export {
   getCurrentUser,
   isUserLoggedIn,
   getStoredUserData
+};
+
+// Funciones globales simples para HTML
+window.estudiaFacilLogin = () => {
+  AuthUtils.logWithIcon('LOGIN DESDE FUNCIÓN GLOBAL', 'user');
+  return AuthManager.signInWithGoogle();
+};
+
+window.estudiaFacilLogout = () => {
+  AuthUtils.logWithIcon('LOGOUT DESDE FUNCIÓN GLOBAL', 'logout');  
+  return AuthManager.signOutUser();
 };
 
 // Exportación global ACTUALIZADA
