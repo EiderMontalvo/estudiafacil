@@ -703,57 +703,38 @@ class AuthManager {
   }
   
   static setupLoginButton() {
-    const loginBtn = getLoginBtn();
-    if (!loginBtn) {
-      console.warn('⚠️ Botón de login no encontrado');
+  const loginBtn = getLoginBtn();
+  if (!loginBtn) {
+    console.warn('⚠️ Botón de login no encontrado');
+    return;
+  }
+  
+  AuthUtils.logWithIcon('CONFIGURANDO BOTÓN LOGIN', 'loading');
+  
+  // NO CLONAR - Solo configurar el existente
+  loginBtn.disabled = false;
+  loginBtn.style.opacity = '1';
+  
+  // Función global para login
+  window.doLogin = async () => {
+    if (loginInProgress) {
+      AuthUtils.showToast('Login en progreso...', 'warning');
       return;
     }
     
-    AuthUtils.logWithIcon('CONFIGURANDO BOTÓN LOGIN', 'loading');
+    AuthUtils.logWithIcon('CLICK EN LOGIN GLOBAL', 'user');
+    AuthUtils.clearRedirectState();
     
-    // Remover listeners previos
-    const newBtn = loginBtn.cloneNode(true);
-    loginBtn.parentNode.replaceChild(newBtn, loginBtn);
-    
-    newBtn.disabled = false;
-    newBtn.innerHTML = `
-      <div class="btn-icon" style="color: var(--neon-cyan);">
-        ${SVGIcons.login}
-      </div>
-      <span class="btn-text">Iniciar Sesión</span>
-    `;
-    newBtn.style.opacity = '1';
-    
-    // Nuevo listener
-    newBtn.addEventListener('click', (e) => {
-      e.preventDefault();
-      e.stopPropagation();
-      
-      AuthUtils.logWithIcon('CLICK EN LOGIN', 'user');
-      
-      if (loginInProgress) {
-        AuthUtils.showToast('Login en progreso...', 'warning');
-        return;
-      }
-      
-      AuthUtils.clearRedirectState();
-      
-      newBtn.disabled = true;
-      newBtn.innerHTML = `
-        <div class="btn-icon animate-spin" style="color: var(--neon-cyan);">
-          ${SVGIcons.loading}
-        </div>
-        <span class="btn-text">Conectando...</span>
-      `;
-      
-      AuthManager.signInWithGoogle().catch((error) => {
-        console.error('❌ Error en click de login:', error);
-        AuthManager.handleLoginError(error);
-      });
-    });
-    
-    AuthUtils.logWithIcon('Botón login configurado', 'success');
-  }
+    try {
+      await AuthManager.signInWithGoogle();
+    } catch (error) {
+      console.error('❌ Error en login global:', error);
+      AuthManager.handleLoginError(error);
+    }
+  };
+  
+  AuthUtils.logWithIcon('Botón login y función global configurados', 'success');
+}
   
   // Nueva función: forzar actualización UI
   static forceUpdateUI() {
@@ -1057,6 +1038,7 @@ if (AuthUtils.isLocalhost()) {
   window.EstudiaFacilDebug = {
     AuthManager: AuthManager,
     AuthUtils: AuthUtils,
+    doLogin: ()=> window.doLogin ? window.doLogin() : AuthManager.signInWithGoogle(),
     user: getCurrentUser,
     firebaseUser: () => auth.currentUser,
     login: () => AuthManager.signInWithGoogle(),
@@ -1139,5 +1121,6 @@ if (AuthUtils.isLocalhost()) {
 }
 
 AuthUtils.logWithIcon('EstudiaFácil v3.0 - LISTO', 'rocket');
+window.doLogin = window.doLogin || (() => AuthManager.signInWithGoogle());
 
 /* ===== FIN DEL ARCHIVO MAIN.JS COMPLETO ===== */
