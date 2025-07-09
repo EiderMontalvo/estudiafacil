@@ -51,7 +51,7 @@
 
       <!-- Auth -->
       <div class="navbar-auth">
-        <button id="loginBtn" class="btn-login" onclick="handleLogin.event()">
+        <button id="loginBtn" class="btn-login">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
             <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4M10 17l5-5-5-5M21 12H9" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
           </svg>
@@ -167,7 +167,7 @@
           </div>
 
           <div class="hero-actions">
-            <button class="btn-hero-primary" onclick="window.doLogin()">
+            <button class="btn-hero-primary">
               <span class="btn-text">Comenzar Ahora</span>
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                 <path d="M5 12h14M12 5l7 7-7 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
@@ -774,6 +774,60 @@
     // Exponer funciones globalmente
     window.toggleSectionsForAuth = toggleSectionsForAuth;
     window.updateAuthStatus = updateAuthStatus;
+  </script>
+
+  <script>
+    // LOGIN FUNCTIONALITY - 2025-07-09 22:21:27 UTC - EiderMontalvo
+    document.addEventListener('DOMContentLoaded', function() {
+      console.log('🔧 Configurando login functionality...');
+      
+      // Función de login que funciona
+      function setupWorkingLogin() {
+        const loginBtn = document.getElementById('loginBtn');
+        const heroBtn = document.querySelector('.btn-hero-primary');
+        
+        if (loginBtn) {
+          loginBtn.onclick = function(e) {
+            e.preventDefault();
+            console.log('🚀 LOGIN BUTTON CLICKED');
+            
+            import('./firebase-config.js?v=' + Date.now()).then(firebase => {
+              const { auth, provider, signInWithPopup } = firebase;
+              signInWithPopup(auth, provider).then(result => {
+                console.log('🎉 LOGIN SUCCESS!', result.user);
+                location.reload();
+              }).catch(error => {
+                console.error('❌ Login error:', error);
+              });
+            });
+          };
+          console.log('✅ Login button configured');
+        }
+        
+        if (heroBtn) {
+          heroBtn.onclick = function(e) {
+            e.preventDefault();
+            document.getElementById('loginBtn').click();
+          };
+          console.log('✅ Hero button configured');
+        }
+      }
+      
+      // Configurar inmediatamente
+      setupWorkingLogin();
+      
+      // Reconfigurar después de que main.js se cargue
+      setTimeout(setupWorkingLogin, 2000);
+      setTimeout(setupWorkingLogin, 5000);
+      
+      // Definir la función doLogin para compatibilidad
+      window.doLogin = function() {
+        console.log('🔑 Invocando login via doLogin()');
+        document.getElementById('loginBtn').click();
+      };
+      
+      console.log('✅ Login functionality ready!');
+    });
   </script>
 </body>
 </html>
