@@ -1,7 +1,3 @@
-/* ===== MAIN.JS MODERNIZADO COMPLETO ===== */
-/* Actualizado: 2025-07-09 20:31:42 UTC - EiderMontalvo */
-/* Con logout mejorado, iconos SVG y colores unificados */
-
 import { 
   auth, 
   db, 
@@ -34,57 +30,7 @@ let isAuthInitialized = false;
 let loginInProgress = false;
 let redirectTimeout = null;
 
-// SVG Icons - Centralizados y reutilizables
-const SVGIcons = {
-  success: `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-    <path d="M20 6L9 17l-5-5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-  </svg>`,
-  
-  error: `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-    <path d="M18 6L6 18M6 6l12 12" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-  </svg>`,
-  
-  warning: `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-    <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-    <line x1="12" y1="9" x2="12" y2="13" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-    <circle cx="12" cy="17" r="1" fill="currentColor"/>
-  </svg>`,
-  
-  info: `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-    <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2"/>
-    <path d="M12 8v4M12 16h.01" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-  </svg>`,
-  
-  login: `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-    <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4M10 17l5-5-5-5M21 12H9" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-  </svg>`,
-  
-  logout: `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-    <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-  </svg>`,
-  
-  loading: `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-    <path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-  </svg>`,
-  
-  user: `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-    <circle cx="12" cy="7" r="4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-  </svg>`,
-  
-  home: `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-    <path d="M3 9.5L12 2l9 7.5V20a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V9.5z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-    <polyline points="9,22 9,12 15,12 15,22" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-  </svg>`,
-  
-  rocket: `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-    <path d="M4.5 16.5c-1.5 1.26-2 5-2 5s3.74-.5 5-2c.71-.84.7-2.13-.09-2.91a2.18 2.18 0 0 0-2.91-.09z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-    <path d="M12 15l-3-3a22 22 0 0 1 2-3.95A12.88 12.88 0 0 1 22 2c0 2.72-.78 7.5-6 11a22.35 22.35 0 0 1-4 2z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-    <path d="M9 12H4s.55-3.03 2-4c1.62-1.08 5 0 5 0M15 15v5s3.03-.55 4-2c1.08-1.62 0-5 0-5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-  </svg>`
-};
-
-// Referencias DOM - OBTENER DINÁMICAMENTE
+// Referencias DOM dinámicas
 function getLoginBtn() { return document.getElementById('loginBtn'); }
 function getLogoutBtn() { return document.getElementById('logoutBtn'); }
 function getProfileLogoutBtn() { return document.getElementById('profileLogoutBtn'); }
@@ -96,43 +42,40 @@ function getProfileName() { return document.getElementById('profileName'); }
 function getProfileEmail() { return document.getElementById('profileEmail'); }
 function getProfileAvatar() { return document.getElementById('profileAvatar'); }
 
-// Utilidades mejoradas con iconos SVG
+// Utilidades de autenticación
 class AuthUtils {
   static showToast(message, type = 'success') {
     const toastContainer = document.getElementById('toastContainer');
     if (!toastContainer) {
-      console.log(`Toast [${type}]: ${message}`);
       return;
     }
     
     const toast = document.createElement('div');
     toast.className = `toast ${type}`;
     
-    const icon = SVGIcons[type] || SVGIcons.info;
+    // Forzar estilos oscuros
+    const colorMap = {
+      success: '#10b981',
+      error: '#ef4444',
+      info: '#3b82f6',
+      warning: '#f59e0b'
+    };
+    
+    toast.style.backgroundColor = colorMap[type] || '#1e293b';
+    toast.style.color = '#ffffff';
+    toast.style.border = '1px solid rgba(255, 255, 255, 0.1)';
     
     toast.innerHTML = `
-      <div class="toast-icon" style="color: var(--neon-cyan);">
-        ${icon}
-      </div>
-      <span class="toast-message">${message}</span>
+      <div class="toast-icon"></div>
+      <span class="toast-message" style="color: #ffffff;">${message}</span>
     `;
     
     toastContainer.appendChild(toast);
     
-    // Animación de entrada
     setTimeout(() => {
-      toast.style.transform = 'translateX(0)';
-      toast.style.opacity = '1';
-    }, 100);
-    
-    // Remover después de 4 segundos
-    setTimeout(() => {
-      toast.style.animation = 'slideOut 0.3s ease forwards';
-      setTimeout(() => {
-        if (toast.parentNode) {
-          toast.remove();
-        }
-      }, 300);
+      if (toast.parentNode) {
+        toast.remove();
+      }
     }, 4000);
   }
   
@@ -149,11 +92,9 @@ class AuthUtils {
     try {
       localStorage.setItem('estudiaFacil_user', JSON.stringify(userData));
       localStorage.setItem('estudiaFacil_logged', 'true');
-      
-      console.log('💾 Usuario guardado:', user.displayName);
       return true;
     } catch (error) {
-      console.error('❌ Error guardando usuario:', error);
+      console.error('Error guardando usuario:', error);
       return false;
     }
   }
@@ -170,11 +111,9 @@ class AuthUtils {
       try {
         localStorage.removeItem(key);
       } catch (error) {
-        console.warn(`No se pudo eliminar ${key}`);
+        // Silenciar errores
       }
     });
-    
-    console.log('🧹 LocalStorage limpiado');
   }
   
   static hasStoredSession() {
@@ -186,7 +125,6 @@ class AuthUtils {
       const userData = localStorage.getItem('estudiaFacil_user');
       return userData ? JSON.parse(userData) : null;
     } catch (error) {
-      console.error('Error al obtener usuario guardado:', error);
       return null;
     }
   }
@@ -200,43 +138,22 @@ class AuthUtils {
       clearTimeout(redirectTimeout);
       redirectTimeout = null;
     }
-    
-    console.log('🧹 Estado de redirect limpiado');
   }
   
   static isLocalhost() {
     const hostname = window.location.hostname;
     return hostname === 'localhost' || hostname === '127.0.0.1';
   }
-  
-  static logWithIcon(message, type = 'info') {
-    const icons = {
-      success: '✅',
-      error: '❌', 
-      warning: '⚠️',
-      info: 'ℹ️',
-      loading: '⏳',
-      user: '👤',
-      storage: '💾',
-      rocket: '🚀',
-      home: '🏠',
-      logout: '🚪'
-    };
-    
-    console.log(`${icons[type] || icons.info} ${message}`);
-  }
 }
 
-// Gestor de Autenticación mejorado
+// Gestor de autenticación
 class AuthManager {
   static async initializePersistence() {
     try {
-      console.log('🔒 Configurando persistencia...');
       await setPersistence(auth, browserLocalPersistence);
-      AuthUtils.logWithIcon('Persistencia configurada', 'success');
       return true;
     } catch (error) {
-      console.error('❌ Error configurando persistencia:', error);
+      console.error('Error configurando persistencia:', error);
       AuthUtils.showToast('Error al configurar persistencia', 'error');
       return false;
     }
@@ -250,11 +167,6 @@ class AuthManager {
     
     try {
       loginInProgress = true;
-      AuthUtils.logWithIcon('INICIANDO LOGIN', 'rocket');
-      AuthUtils.logWithIcon(`UTC: ${new Date().toISOString()}`, 'info');
-      AuthUtils.logWithIcon('Usuario: EiderMontalvo', 'user');
-      AuthUtils.logWithIcon(`Dominio: ${window.location.hostname}`, 'info');
-      
       AuthUtils.clearRedirectState();
       
       const persistenceOk = await this.initializePersistence();
@@ -265,7 +177,6 @@ class AuthManager {
       this.updateLoginButton('Conectando...', true);
       AuthUtils.showToast('Conectando con Google...', 'info');
       
-      // Decidir método según el entorno
       if (AuthUtils.isLocalhost()) {
         await this.loginWithPopup();
       } else {
@@ -273,27 +184,18 @@ class AuthManager {
       }
       
     } catch (error) {
-      console.error('❌ Error en login:', error);
+      console.error('Error en login:', error);
       this.handleLoginError(error);
     }
   }
   
   static async loginWithPopup() {
     try {
-      AuthUtils.logWithIcon('Login con popup...', 'loading');
-      
       const result = await signInWithPopup(auth, provider);
       
-      AuthUtils.logWithIcon('LOGIN POPUP EXITOSO', 'success');
-      AuthUtils.logWithIcon(`Usuario: ${result.user.displayName}`, 'user');
-      AuthUtils.logWithIcon(`Email: ${result.user.email}`, 'info');
-      AuthUtils.logWithIcon(`UID: ${result.user.uid}`, 'info');
-      
-      // Forzar actualización inmediata
       AuthUtils.clearRedirectState();
       AuthUtils.saveUserToStorage(result.user);
       
-      // Actualizar UI inmediatamente
       this.updateUI(result.user);
       
       AuthUtils.showToast(`¡Bienvenido, ${result.user.displayName}!`, 'success');
@@ -303,14 +205,10 @@ class AuthManager {
       return result.user;
       
     } catch (error) {
-      console.error('❌ Error en popup:', error);
-      
       if (error.code === 'auth/popup-blocked' || 
           error.code === 'auth/popup-closed-by-user') {
         
-        AuthUtils.logWithIcon('Popup bloqueado, probando redirect...', 'warning');
         AuthUtils.showToast('Popup bloqueado, probando redirect...', 'warning');
-        
         await this.loginWithRedirect();
       } else {
         throw error;
@@ -320,8 +218,6 @@ class AuthManager {
   
   static async loginWithRedirect() {
     try {
-      AuthUtils.logWithIcon('Login con redirect...', 'loading');
-      
       const redirectTime = Date.now();
       localStorage.setItem('estudiaFacil_redirecting', 'true');
       localStorage.setItem('estudiaFacil_redirectTime', redirectTime.toString());
@@ -329,9 +225,7 @@ class AuthManager {
       this.updateLoginButton('Redirigiendo...', true);
       AuthUtils.showToast('Redirigiendo a Google...', 'info');
       
-      // Timeout de seguridad
       redirectTimeout = setTimeout(() => {
-        AuthUtils.logWithIcon('TIMEOUT: Redirect demorado', 'warning');
         AuthManager.handleRedirectTimeout();
       }, 30000);
       
@@ -339,13 +233,13 @@ class AuthManager {
         try {
           await signInWithRedirect(auth, provider);
         } catch (redirectError) {
-          console.error('❌ Error en redirect:', redirectError);
+          console.error('Error en redirect:', redirectError);
           AuthManager.handleLoginError(redirectError);
         }
       }, 1000);
       
     } catch (error) {
-      console.error('❌ Error en redirect setup:', error);
+      console.error('Error en redirect setup:', error);
       throw error;
     }
   }
@@ -362,32 +256,25 @@ class AuthManager {
       };
       
       await setDoc(userRef, userData, { merge: true });
-      AuthUtils.logWithIcon('Usuario guardado en Firestore', 'success');
     } catch (error) {
-      console.error('⚠️ No se pudo guardar en Firestore:', error);
+      console.error('No se pudo guardar en Firestore:', error);
     }
   }
   
   static handleRedirectTimeout() {
-    AuthUtils.logWithIcon('TIMEOUT DE REDIRECT', 'warning');
-    
     AuthUtils.clearRedirectState();
     AuthUtils.showToast('Timeout. Reintentando...', 'warning');
     
     this.updateLoginButton('Iniciar Sesión', false);
     
-    // Reintentar una vez
     setTimeout(() => {
       if (!currentUser && !loginInProgress) {
-        AuthUtils.logWithIcon('Reintentando automáticamente...', 'loading');
         AuthManager.signInWithGoogle();
       }
     }, 3000);
   }
   
   static handleLoginError(error) {
-    AuthUtils.logWithIcon(`ERROR EN LOGIN: ${error.message}`, 'error');
-    
     AuthUtils.clearRedirectState();
     
     let message = 'Error de autenticación';
@@ -407,19 +294,12 @@ class AuthManager {
   
   static async checkRedirectResult() {
     try {
-      AuthUtils.logWithIcon('VERIFICANDO REDIRECT', 'loading');
-      
       const result = await getRedirectResult(auth);
       
       if (result) {
-        AuthUtils.logWithIcon('LOGIN REDIRECT EXITOSO', 'success');
-        AuthUtils.logWithIcon(`Usuario: ${result.user.displayName}`, 'user');
-        
-        // Forzar actualización inmediata
         AuthUtils.clearRedirectState();
         AuthUtils.saveUserToStorage(result.user);
         
-        // Actualizar UI inmediatamente
         this.updateUI(result.user);
         
         AuthUtils.showToast(`¡Bienvenido, ${result.user.displayName}!`, 'success');
@@ -434,16 +314,13 @@ class AuthManager {
           const redirectTime = parseInt(localStorage.getItem('estudiaFacil_redirectTime')) || 0;
           const elapsed = Date.now() - redirectTime;
           
-          console.log(`⏳ Esperando redirect... (${Math.round(elapsed / 1000)}s)`);
-          
           if (elapsed > 45000) {
-            AuthUtils.logWithIcon('TIMEOUT CRÍTICO', 'error');
             this.handleRedirectTimeout();
           }
         }
       }
     } catch (error) {
-      console.error('❌ Error en checkRedirectResult:', error);
+      console.error('Error en checkRedirectResult:', error);
       
       AuthUtils.clearRedirectState();
       
@@ -456,10 +333,9 @@ class AuthManager {
     return null;
   }
   
-  // ===== LOGOUT MEJORADO CON REDIRECCIÓN =====
+  // Logout con redirección al inicio
   static async signOutUser(redirectToHome = false) {
     try {
-      AuthUtils.logWithIcon('LOGOUT INICIADO', 'logout');
       AuthUtils.showToast('Cerrando sesión...', 'info');
       
       AuthUtils.clearRedirectState();
@@ -471,33 +347,26 @@ class AuthManager {
       
       AuthUtils.showToast('Sesión cerrada exitosamente', 'success');
       
-      // Actualizar UI inmediatamente
       this.updateUI(null);
       
-      // Si se solicita redirección al inicio
+      // Redirección al inicio si se solicita
       if (redirectToHome) {
-        AuthUtils.logWithIcon('Redirigiendo al inicio...', 'home');
-        
-        // Navegar al dashboard/inicio
         setTimeout(() => {
           if (window.navigateToSection) {
             window.navigateToSection('dashboard');
           }
           
-          // Mostrar welcome hero
           const welcomeHero = document.getElementById('welcomeHero');
           const dashboardContent = document.getElementById('dashboardContent');
           
           if (welcomeHero) {
             welcomeHero.style.display = 'block';
-            AuthUtils.logWithIcon('Welcome hero mostrado', 'success');
           }
           
           if (dashboardContent) {
             dashboardContent.style.display = 'none';
           }
           
-          // Mensaje de bienvenida después del logout
           setTimeout(() => {
             AuthUtils.showToast('¡Inicia sesión para acceder a todas las funciones!', 'info');
           }, 1000);
@@ -510,32 +379,24 @@ class AuthManager {
       }, 500);
       
     } catch (error) {
-      console.error('❌ Error en logout:', error);
+      console.error('Error en logout:', error);
       AuthUtils.showToast('Error al cerrar sesión', 'error');
     }
   }
   
-  // Función específica para logout desde perfil
+  // Logout desde perfil con redirección
   static async logoutFromProfile() {
-    AuthUtils.logWithIcon('LOGOUT DESDE PERFIL', 'logout');
-    await this.signOutUser(true); // true = redirigir al inicio
+    await this.signOutUser(true);
   }
   
-  // Función para logout desde navbar (si lo necesitas)
+  // Logout desde navbar sin redirección
   static async logoutFromNavbar() {
-    AuthUtils.logWithIcon('LOGOUT DESDE NAVBAR', 'logout');
-    await this.signOutUser(false); // false = no redirigir
+    await this.signOutUser(false);
   }
 
-  // Función updateUI completamente reescrita con iconos SVG
   static updateUI(user) {
-    AuthUtils.logWithIcon('ACTUALIZANDO UI', 'info');
-    console.log('👤 Usuario recibido:', user ? user.displayName : 'null');
-    
-    // Actualizar variable global inmediatamente
     currentUser = user;
     
-    // Obtener elementos dinámicamente
     const loginBtn = getLoginBtn();
     const userProfile = getUserProfile();
     const contentNav = getContentNav();
@@ -546,37 +407,28 @@ class AuthManager {
     const profileAvatar = getProfileAvatar();
     
     if (user) {
-      AuthUtils.logWithIcon('MOSTRANDO UI DE USUARIO LOGUEADO', 'user');
-      console.log('👤 Nombre:', user.displayName);
-      console.log('📧 Email:', user.email);
-      
       // Ocultar botón de login
       if (loginBtn) {
-        console.log('🔧 Ocultando botón de login');
         loginBtn.style.display = 'none';
       }
       
       // Mostrar perfil de usuario
       if (userProfile) {
-        console.log('🔧 Mostrando perfil de usuario');
         userProfile.style.display = 'flex';
       }
       
       // Mostrar navegación de contenido
       if (contentNav) {
-        console.log('🔧 Mostrando navegación de contenido');
         contentNav.style.display = 'block';
       }
       
       // Actualizar nombre en header
       if (userName) {
-        console.log('🔧 Actualizando nombre en header');
         userName.textContent = user.displayName || 'Usuario';
       }
       
       // Actualizar avatar en header
       if (userAvatar) {
-        console.log('🔧 Actualizando avatar en header');
         const avatarUrl = user.photoURL || this.generateAvatarUrl(user.displayName);
         userAvatar.src = avatarUrl;
         userAvatar.alt = user.displayName || 'Avatar';
@@ -588,17 +440,14 @@ class AuthManager {
       
       // Actualizar perfil
       if (profileName) {
-        console.log('🔧 Actualizando nombre en perfil');
         profileName.textContent = user.displayName || 'Usuario';
       }
       
       if (profileEmail) {
-        console.log('🔧 Actualizando email en perfil');
         profileEmail.textContent = user.email || '';
       }
       
       if (profileAvatar) {
-        console.log('🔧 Actualizando avatar en perfil');
         const avatarUrl = user.photoURL || this.generateAvatarUrl(user.displayName);
         profileAvatar.src = avatarUrl;
         profileAvatar.alt = user.displayName || 'Avatar';
@@ -610,36 +459,27 @@ class AuthManager {
       
       // Notificar a otros sistemas
       if (window.toggleSectionsForAuth) {
-        console.log('🔧 Notificando a toggleSectionsForAuth');
         window.toggleSectionsForAuth(true);
       }
       
       if (window.updateAuthStatus) {
-        console.log('🔧 Actualizando estado en footer');
         window.updateAuthStatus(`Conectado como ${user.displayName}`);
       }
       
-      AuthUtils.logWithIcon('UI de usuario logueado actualizada completamente', 'success');
-      
     } else {
-      AuthUtils.logWithIcon('MOSTRANDO UI DE USUARIO NO LOGUEADO', 'info');
-      
       // Mostrar botón de login
       if (loginBtn) {
-        console.log('🔧 Mostrando botón de login');
         loginBtn.style.display = 'flex';
         this.updateLoginButton('Iniciar Sesión', false);
       }
       
       // Ocultar perfil de usuario
       if (userProfile) {
-        console.log('🔧 Ocultando perfil de usuario');
         userProfile.style.display = 'none';
       }
       
       // Ocultar navegación de contenido
       if (contentNav) {
-        console.log('🔧 Ocultando navegación de contenido');
         contentNav.style.display = 'none';
       }
       
@@ -653,16 +493,12 @@ class AuthManager {
       
       // Notificar a otros sistemas
       if (window.toggleSectionsForAuth) {
-        console.log('🔧 Notificando a toggleSectionsForAuth - usuario no logueado');
         window.toggleSectionsForAuth(false);
       }
       
       if (window.updateAuthStatus) {
-        console.log('🔧 Actualizando estado en footer - sin autenticar');
         window.updateAuthStatus('Sin autenticar');
       }
-      
-      AuthUtils.logWithIcon('UI de usuario no logueado actualizada completamente', 'success');
     }
   }
   
@@ -670,26 +506,19 @@ class AuthManager {
     const loginBtn = getLoginBtn();
     if (!loginBtn) return;
     
-    console.log('🔧 Actualizando botón login:', text, disabled ? 'DISABLED' : 'ENABLED');
-    
     loginBtn.disabled = disabled;
-    
-    const icon = disabled ? SVGIcons.loading : SVGIcons.login;
-    const iconClass = disabled ? 'animate-spin' : '';
     
     if (disabled) {
       loginBtn.innerHTML = `
-        <div class="btn-icon ${iconClass}" style="color: var(--neon-cyan);">
-          ${icon}
-        </div>
+        <div class="btn-icon animate-spin">⏳</div>
         <span class="btn-text">${text}</span>
       `;
       loginBtn.style.opacity = '0.7';
     } else {
       loginBtn.innerHTML = `
-        <div class="btn-icon" style="color: var(--neon-cyan);">
-          ${icon}
-        </div>
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4M10 17l5-5-5-5M21 12H9" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
         <span class="btn-text">${text}</span>
       `;
       loginBtn.style.opacity = '1';
@@ -698,51 +527,37 @@ class AuthManager {
   
   static generateAvatarUrl(name) {
     const encodedName = encodeURIComponent(name || 'Usuario');
-    // Usar colores del tema (neon cyan y pink)
     return `https://ui-avatars.com/api/?name=${encodedName}&background=00f5ff&color=fff&size=120&bold=true`;
   }
   
   static setupLoginButton() {
-  const loginBtn = getLoginBtn();
-  if (!loginBtn) {
-    console.warn('⚠️ Botón de login no encontrado');
-    return;
-  }
-  
-  AuthUtils.logWithIcon('CONFIGURANDO BOTÓN LOGIN', 'loading');
-  
-  // NO CLONAR - Solo configurar el existente
-  loginBtn.disabled = false;
-  loginBtn.style.opacity = '1';
-  
-  // Función global para login
-  window.doLogin = async () => {
-    if (loginInProgress) {
-      AuthUtils.showToast('Login en progreso...', 'warning');
+    const loginBtn = getLoginBtn();
+    if (!loginBtn) {
       return;
     }
     
-    AuthUtils.logWithIcon('CLICK EN LOGIN GLOBAL', 'user');
-    AuthUtils.clearRedirectState();
+    loginBtn.disabled = false;
+    loginBtn.style.opacity = '1';
     
-    try {
-      await AuthManager.signInWithGoogle();
-    } catch (error) {
-      console.error('❌ Error en login global:', error);
-      AuthManager.handleLoginError(error);
-    }
-  };
+    window.doLogin = async () => {
+      if (loginInProgress) {
+        AuthUtils.showToast('Login en progreso...', 'warning');
+        return;
+      }
+      
+      AuthUtils.clearRedirectState();
+      
+      try {
+        await AuthManager.signInWithGoogle();
+      } catch (error) {
+        console.error('Error en login global:', error);
+        AuthManager.handleLoginError(error);
+      }
+    };
+  }
   
-  AuthUtils.logWithIcon('Botón login y función global configurados', 'success');
-}
-  
-  // Nueva función: forzar actualización UI
   static forceUpdateUI() {
-    AuthUtils.logWithIcon('FORZANDO ACTUALIZACIÓN UI', 'loading');
-    
-    // Verificar si hay usuario actual en Firebase
     const firebaseUser = auth.currentUser;
-    console.log('🔧 Usuario en Firebase:', firebaseUser ? firebaseUser.displayName : 'null');
     
     if (firebaseUser) {
       this.updateUI(firebaseUser);
@@ -765,7 +580,26 @@ function getStoredUserData() {
   return AuthUtils.getStoredUser();
 }
 
-// Inicialización mejorada
+// Monitor de conexión Firestore
+function monitorearConexionFirestore() {
+  let timeoutConexion = setTimeout(() => {
+    console.warn('⚠️ Timeout de conexión Firestore');
+    if (window.showToast) {
+      window.showToast('Problemas de conectividad. Verificando conexión...', 'warning');
+    }
+  }, 8000);
+  
+  // Limpiar timeout cuando se establezca conexión
+  window.conexionEstablecida = () => {
+    if (timeoutConexion) {
+      clearTimeout(timeoutConexion);
+      timeoutConexion = null;
+      console.log('✅ Conexión Firestore establecida');
+    }
+  };
+}
+
+// Inicialización de la aplicación
 async function initializeApp() {
   try {    
     const loadingScreen = document.getElementById('loadingScreen');
@@ -775,34 +609,27 @@ async function initializeApp() {
     
     AuthUtils.clearRedirectState();
     
+    // Agregar monitor de conexión
+    monitorearConexionFirestore();
+    
     await AuthManager.initializePersistence();
     AuthManager.setupLoginButton();
     await AuthManager.checkRedirectResult();
     
-    // Observer mejorado con forzado de actualización
+    // Observer de autenticación
     onAuthStateChanged(auth, (user) => {
-      AuthUtils.logWithIcon('AUTH STATE CHANGE', 'info');
-      console.log('👤 Usuario Firebase:', user ? `${user.displayName} (${user.email})` : 'null');
-      console.log('🕒 Timestamp:', new Date().toISOString());
-      
       if (!isAuthInitialized) {
         isAuthInitialized = true;
-        AuthUtils.logWithIcon('Autenticación inicializada por primera vez', 'success');
         
         if (user) {
-          AuthUtils.logWithIcon('Usuario ya autenticado al cargar', 'user');
           AuthUtils.saveUserToStorage(user);
           AuthUtils.clearRedirectState();
         }
       }
       
-      // Actualizar UI inmediatamente
       AuthManager.updateUI(user);
       
-      // Cargar dashboard si hay usuario
       if (user && (!currentUser || currentUser.uid !== user.uid)) {
-        AuthUtils.logWithIcon('Cargando datos del usuario...', 'loading');
-        
         if (window.DashboardManager) {
           setTimeout(() => {
             window.DashboardManager.loadDashboard();
@@ -811,38 +638,31 @@ async function initializeApp() {
       }
     });
     
-    // Verificación adicional cada 2 segundos los primeros 10 segundos
+    // Verificación UI cada 2 segundos
     let uiChecks = 0;
     const maxUIChecks = 5;
     
     const uiCheckInterval = setInterval(() => {
       uiChecks++;
       
-      console.log(`🔧 Verificación UI #${uiChecks}`);
-      
       const firebaseUser = auth.currentUser;
       const loginBtn = getLoginBtn();
       const userProfile = getUserProfile();
       
-      // Si hay usuario pero el botón aún está visible, forzar actualización
       if (firebaseUser && loginBtn && loginBtn.style.display !== 'none') {
-        AuthUtils.logWithIcon('DETECTADO DESAJUSTE UI - FORZANDO ACTUALIZACIÓN', 'warning');
         AuthManager.forceUpdateUI();
       }
       
-      // Si no hay usuario pero el perfil está visible, forzar actualización
       if (!firebaseUser && userProfile && userProfile.style.display !== 'none') {
-        AuthUtils.logWithIcon('DETECTADO DESAJUSTE UI INVERSO - FORZANDO ACTUALIZACIÓN', 'warning');
         AuthManager.forceUpdateUI();
       }
       
       if (uiChecks >= maxUIChecks) {
-        AuthUtils.logWithIcon('Verificaciones UI completadas', 'success');
         clearInterval(uiCheckInterval);
       }
     }, 2000);
     
-    // Verificación periódica cada 5 segundos para redirect
+    // Verificación de redirect cada 5 segundos
     let redirectChecks = 0;
     const maxChecks = 24;
     
@@ -851,14 +671,12 @@ async function initializeApp() {
       
       const wasRedirecting = localStorage.getItem('estudiaFacil_redirecting');
       if (wasRedirecting === 'true' && !currentUser) {
-        console.log(`🔍 Verificación redirect ${redirectChecks}/${maxChecks}`);
         AuthManager.checkRedirectResult();
       } else {
         clearInterval(checkInterval);
       }
       
       if (redirectChecks >= maxChecks) {
-        AuthUtils.logWithIcon('Timeout final de redirect', 'warning');
         AuthUtils.clearRedirectState();
         AuthManager.updateLoginButton('Iniciar Sesión', false);
         clearInterval(checkInterval);
@@ -868,20 +686,17 @@ async function initializeApp() {
     setTimeout(() => {
       if (loadingScreen) {
         loadingScreen.classList.add('hidden');
-        AuthUtils.logWithIcon('Loading screen ocultado', 'success');
       }
     }, 2500);
     
     setTimeout(() => {
       if (!currentUser) {
-        AuthUtils.showToast('¡Bienvenido a EstudiaFácil v3.0!', 'info');
+        AuthUtils.showToast('¡Bienvenido a EstudiaFácil!', 'info');
       }
     }, 4000);
     
-    AuthUtils.logWithIcon('EstudiaFácil v3.0 INICIALIZADO', 'rocket');
-    
   } catch (error) {
-    AuthUtils.logWithIcon(`ERROR CRÍTICO: ${error.message}`, 'error');
+    console.error('Error crítico:', error);
     AuthUtils.showToast('Error crítico. Recarga la página.', 'error');
     
     const loadingScreen = document.getElementById('loadingScreen');
@@ -891,42 +706,34 @@ async function initializeApp() {
   }
 }
 
-// Configurar logout buttons con referencia dinámica MEJORADO
+// Configurar botones de logout
 function setupLogoutButtons() {
-  // Logout button en navbar (si existe)
   const logoutBtn = getLogoutBtn();
   if (logoutBtn) {
     logoutBtn.addEventListener('click', (e) => {
       e.preventDefault();
-      AuthUtils.logWithIcon('Click en logout navbar', 'logout');
       AuthManager.logoutFromNavbar();
     });
   }
   
-  // Logout button en perfil - CON REDIRECCIÓN AL INICIO
   const profileLogoutBtn = getProfileLogoutBtn();
   if (profileLogoutBtn) {
     profileLogoutBtn.addEventListener('click', (e) => {
       e.preventDefault();
-      AuthUtils.logWithIcon('Click en logout perfil - redirigiendo al inicio', 'logout');
       AuthManager.logoutFromProfile();
     });
   }
   
-  // También manejarlo desde modules.js si existe
   const profileLogoutAlt = document.getElementById('profileLogoutBtn');
   if (profileLogoutAlt && profileLogoutAlt !== profileLogoutBtn) {
     profileLogoutAlt.addEventListener('click', (e) => {
       e.preventDefault();
-      AuthUtils.logWithIcon('Click en logout perfil alternativo', 'logout');
       AuthManager.logoutFromProfile();
     });
   }
-  
-  AuthUtils.logWithIcon('Logout buttons configurados', 'success');
 }
 
-// CSS adicional para animaciones de iconos
+// CSS adicional para animaciones y vistas previas mejoradas
 const additionalCSS = `
   .animate-spin {
     animation: spin 1s linear infinite;
@@ -940,10 +747,18 @@ const additionalCSS = `
   .toast {
     display: flex;
     align-items: center;
-    gap: var(--space-3);
+    gap: 0.75rem;
     transform: translateX(100%);
     opacity: 0;
     transition: all 0.3s ease;
+    padding: 1rem;
+    border-radius: 8px;
+    margin-bottom: 0.5rem;
+  }
+  
+  .toast.show {
+    transform: translateX(0);
+    opacity: 1;
   }
   
   .toast-icon {
@@ -958,18 +773,755 @@ const additionalCSS = `
     font-weight: 600;
   }
   
-  @keyframes slideOut {
-    to {
-      transform: translateX(100%);
-      opacity: 0;
-    }
+  .toast-close {
+    background: none;
+    border: none;
+    color: white;
+    cursor: pointer;
+    font-size: 1.2rem;
+    padding: 0 0.5rem;
+  }
+  
+  /* Estilos mejorados para cards de recursos */
+  .resource-card {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border-radius: 12px;
+    padding: 1.5rem;
+    margin-bottom: 1rem;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    color: white;
+  }
+  
+  .resource-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+  }
+  
+  .resource-preview-container {
+    width: 100%;
+    height: 200px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 8px;
+    overflow: hidden;
+    margin: 1rem 0;
+    position: relative;
+  }
+  
+  .resource-image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 6px;
+    transition: transform 0.3s ease;
+  }
+  
+  .resource-image:hover {
+    transform: scale(1.05);
+  }
+  
+  .file-link-preview {
+    background: rgba(255, 255, 255, 0.1);
+    border: 2px dashed rgba(255, 255, 255, 0.3);
+    border-radius: 8px;
+    padding: 2rem;
+    text-align: center;
+    margin: 1rem 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1rem;
+    min-height: 120px;
+    justify-content: center;
+  }
+  
+  .file-icon {
+    font-size: 3rem;
+    color: rgba(255, 255, 255, 0.7);
+  }
+  
+  .file-info {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+  }
+  
+  .file-name {
+    color: rgba(255, 255, 255, 0.9);
+    font-weight: 600;
+    font-size: 1.1rem;
+  }
+  
+  .file-view-link {
+    color: #00f5ff;
+    text-decoration: none;
+    font-weight: 600;
+    padding: 0.5rem 1rem;
+    border: 1px solid #00f5ff;
+    border-radius: 6px;
+    transition: all 0.2s ease;
+  }
+  
+  .file-view-link:hover {
+    background: #00f5ff;
+    color: #1a1a2e;
+    text-decoration: none;
+  }
+  
+  .file-placeholder {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 2rem;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 8px;
+    color: rgba(255, 255, 255, 0.7);
+    font-size: 1rem;
+    min-height: 120px;
+    text-align: center;
+  }
+  
+  /* Imagen con efecto de carga */
+  .resource-image[data-loading="true"] {
+    opacity: 0.5;
+    filter: blur(2px);
+  }
+  
+  .resource-image[data-loading="false"] {
+    opacity: 1;
+    filter: none;
+  }
+  
+  /* Loader para imágenes */
+  .image-loader {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    color: rgba(255, 255, 255, 0.7);
+    font-size: 2rem;
+    z-index: 1;
+  }
+  
+  @keyframes imageLoad {
+    0% { opacity: 0; transform: scale(0.9); }
+    100% { opacity: 1; transform: scale(1); }
+  }
+  
+  .resource-image.loaded {
+    animation: imageLoad 0.3s ease-in-out;
   }
 `;
 
-// Inyectar CSS adicional
+// Inyectar CSS
 const styleSheet = document.createElement('style');
 styleSheet.textContent = additionalCSS;
 document.head.appendChild(styleSheet);
+
+// ✅ FUNCIÓN CORREGIDA PARA OBTENER URL DE UPLOADCARE
+async function getUploadcareUrl() {
+  const archivoInput = document.getElementById('archivo');
+  
+  if (!archivoInput) {
+    throw new Error('Campo de archivo no encontrado');
+  }
+  
+  let url = archivoInput.value?.trim();
+  
+  if (!url) {
+    throw new Error('Debes seleccionar un archivo');
+  }
+  
+  // Si es una URL completa, usarla directamente
+  if (url.startsWith('http')) {
+    console.log('✅ URL completa detectada:', url);
+    return url;
+  }
+  
+  // Si parece ser un ID de Uploadcare, construir la URL
+  if (url.match(/^[a-zA-Z0-9-_]+$/)) {
+    const constructedUrl = `https://ucarecdn.com/${url}/`;
+    console.log('🔧 URL construida desde ID:', constructedUrl);
+    return constructedUrl;
+  }
+  
+  // Si no se puede determinar el formato, intentar usar como está
+  console.log('⚠️ Formato de archivo no reconocido, usando como está:', url);
+  return url;
+}
+
+// ✅ EVENT LISTENER DEL FORMULARIO CORREGIDO
+document.addEventListener('DOMContentLoaded', function() {
+  const uploadForm = document.getElementById('uploadForm');
+  const uploadModal = document.getElementById('uploadModal');
+  
+  if (uploadForm) {
+    uploadForm.addEventListener('submit', async function(e) {
+      e.preventDefault();
+      
+      const submitBtn = uploadForm.querySelector('button[type="submit"]');
+      const originalText = submitBtn.innerHTML;
+      
+      try {
+        // Mostrar loading
+        submitBtn.innerHTML = '<span class="btn-text">Guardando...</span>';
+        submitBtn.disabled = true;
+        
+        // Verificar autenticación
+        const currentUser = window.getCurrentUser();
+        if (!currentUser) {
+          throw new Error('Debes iniciar sesión para subir recursos');
+        }
+        
+        // Obtener URL del archivo
+        let archivoUrl;
+        try {
+          archivoUrl = await getUploadcareUrl();
+        } catch (error) {
+          // Fallback: intentar obtener directamente del input
+          archivoUrl = document.getElementById('archivo').value.trim();
+          if (!archivoUrl) {
+            throw new Error('Debes seleccionar un archivo');
+          }
+        }
+        
+        // Validar otros campos requeridos
+        const titulo = document.getElementById('titulo').value.trim();
+        if (!titulo) {
+          throw new Error('El título es obligatorio');
+        }
+        
+        // Obtener datos del formulario
+        const formData = {
+          titulo: titulo,
+          categoria: document.getElementById('categoria').value,
+          materia: document.getElementById('materia').value.trim(),
+          nivel: document.getElementById('nivel').value,
+          descripcion: document.getElementById('descripcion').value.trim(),
+          archivo: archivoUrl,
+          autorId: currentUser.uid,
+          autorNombre: currentUser.displayName,
+          autorEmail: currentUser.email,
+          fechaCreacion: serverTimestamp(),
+          descargas: 0
+        };
+        
+        console.log('📋 Datos del formulario:', formData);
+        
+        // Guardar en Firestore con protección de timeout
+        const savePromise = addDoc(collection(db, 'recursos'), formData);
+        
+        const timeoutPromise = new Promise((_, reject) => 
+          setTimeout(() => reject(new Error('Tiempo de espera agotado al guardar')), 15000)
+        );
+        
+        await Promise.race([savePromise, timeoutPromise]);
+        
+        // ✅ ÉXITO
+        showToast('¡Recurso guardado exitosamente! 🎉', 'success');
+        
+        // Cerrar modal y limpiar
+        if (uploadModal) uploadModal.style.display = 'none';
+        uploadForm.reset();
+        
+        // Recargar lista de recursos
+        if (window.cargarRecursos) {
+          setTimeout(window.cargarRecursos, 500);
+        }
+        
+      } catch (error) {
+        console.error('❌ Error al guardar recurso:', error);
+        
+        // Mostrar error específico
+        let errorMessage = 'Error al guardar recurso';
+        
+        if (error.code) {
+          const firebaseErrors = {
+            'permission-denied': 'Sin permisos para guardar. Verifica tu sesión.',
+            'unavailable': 'Servicio no disponible. Intenta más tarde.',
+            'deadline-exceeded': 'Tiempo de espera agotado.',
+            'resource-exhausted': 'Límite de operaciones alcanzado.'
+          };
+          errorMessage = firebaseErrors[error.code] || `Error Firebase (${error.code})`;
+        } else {
+          errorMessage = error.message;
+        }
+        
+        showToast(errorMessage, 'error');
+        
+      } finally {
+        // Restaurar botón siempre
+        submitBtn.innerHTML = originalText;
+        submitBtn.disabled = false;
+      }
+    });
+  }
+});
+
+// Función para mostrar toasts mejorada
+function showToast(message, type = 'info') {
+  const toastContainer = document.getElementById('toastContainer') || createToastContainer();
+  
+  const toast = document.createElement('div');
+  toast.className = `toast toast-${type}`;
+  toast.innerHTML = `
+    <div class="toast-content">
+      <span class="toast-icon">${getToastIcon(type)}</span>
+      <span class="toast-message">${message}</span>
+    </div>
+    <button class="toast-close" onclick="this.parentElement.remove()">×</button>
+  `;
+  
+  toastContainer.appendChild(toast);
+  
+  // Auto-remove después de 4 segundos
+  setTimeout(() => {
+    if (toast.parentElement) {
+      toast.remove();
+    }
+  }, 4000);
+  
+  // Mostrar con animación
+  setTimeout(() => toast.classList.add('show'), 100);
+}
+
+function getToastIcon(type) {
+  const icons = {
+    success: '✅',
+    error: '❌',
+    warning: '⚠️',
+    info: 'ℹ️'
+  };
+  return icons[type] || icons.info;
+}
+
+function createToastContainer() {
+  const container = document.createElement('div');
+  container.id = 'toastContainer';
+  container.className = 'toast-container';
+  container.style.cssText = `
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    z-index: 10000;
+    max-width: 350px;
+  `;
+  document.body.appendChild(container);
+  return container;
+}
+
+// ✅ FUNCIÓN CARGAR RECURSOS MEJORADA CON TIMEOUT
+async function cargarRecursos() {
+  try {
+    console.log('📚 Cargando recursos...');
+    
+    const listaRecursos = document.getElementById('listaRecursos');
+    const emptyState = document.getElementById('emptyState');
+    
+    if (!listaRecursos) {
+      console.error('❌ No se encontró el contenedor de recursos');
+      return;
+    }
+    
+    // Mostrar loading
+    listaRecursos.innerHTML = `
+      <div class="loading-resources">
+        <div class="spinner"></div>
+        <p>Cargando recursos...</p>
+      </div>
+    `;
+    
+    // Verificar servicios de Firebase
+    if (!db || !collection || !getDocs) {
+      throw new Error('Servicios de Firebase no disponibles');
+    }
+    
+    // Obtener recursos con timeout
+    const recursosRef = collection(db, 'recursos');
+    const timeoutPromise = new Promise((_, reject) => 
+      setTimeout(() => reject(new Error('Tiempo de espera agotado al cargar recursos')), 10000)
+    );
+    
+    const querySnapshot = await Promise.race([
+      getDocs(recursosRef),
+      timeoutPromise
+    ]);
+    
+    const recursos = [];
+    querySnapshot.forEach((doc) => {
+      recursos.push({ id: doc.id, ...doc.data() });
+    });
+    
+    console.log('✅ Recursos cargados:', recursos.length);
+    
+    // Notificar conexión establecida
+    if (window.conexionEstablecida) {
+      window.conexionEstablecida();
+    }
+    
+    // Mostrar recursos o estado vacío
+    if (recursos.length === 0) {
+      listaRecursos.innerHTML = '';
+      if (emptyState) emptyState.style.display = 'block';
+    } else {
+      if (emptyState) emptyState.style.display = 'none';
+      
+      // Ordenar por fecha (más recientes primero)
+      recursos.sort((a, b) => {
+        const fechaA = a.fechaCreacion?.toDate?.() || new Date(a.fechaCreacion);
+        const fechaB = b.fechaCreacion?.toDate?.() || new Date(b.fechaCreacion);
+        return fechaB - fechaA;
+      });
+      
+      // Renderizar recursos
+      listaRecursos.innerHTML = recursos.map(recurso => createResourceCard(recurso)).join('');
+    }
+    
+  } catch (error) {
+    console.error('❌ Error al cargar recursos:', error);
+    
+    // Manejo de errores mejorado
+    let errorMessage = 'Error al cargar recursos';
+    
+    if (error.code) {
+      const errorMessages = {
+        'unavailable': 'Servicio no disponible. Verifica tu conexión.',
+        'permission-denied': 'Sin permisos para acceder a los datos.',
+        'deadline-exceeded': 'Tiempo de espera agotado.',
+        'failed-precondition': 'Error de configuración de Firestore.'
+      };
+      errorMessage = errorMessages[error.code] || `Error Firestore (${error.code}): ${error.message}`;
+    } else if (error.message.includes('Tiempo de espera')) {
+      errorMessage = 'La carga está tardando más de lo normal. Reintentando...';
+    }
+    
+    const listaRecursos = document.getElementById('listaRecursos');
+    if (listaRecursos) {
+      listaRecursos.innerHTML = `
+        <div class="error-loading">
+          <p>❌ ${errorMessage}</p>
+          <button onclick="cargarRecursos()" class="btn-retry">Reintentar</button>
+        </div>
+      `;
+    }
+    
+    if (window.showToast) {
+      window.showToast(errorMessage, 'error');
+    }
+  }
+}
+
+// Función para crear card de recurso
+function createResourceCard(recurso) {
+  const currentUser = getCurrentUser();
+  const isMyResource = recurso.autorId === currentUser?.uid;
+  
+  // Formatear fecha
+  let fechaStr = 'Fecha no disponible';
+  try {
+    const fecha = recurso.fechaCreacion?.toDate?.() || new Date(recurso.fechaCreacion);
+    fechaStr = fecha.toLocaleDateString('es-ES', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric'
+    });
+  } catch (e) {
+    console.warn('Error al formatear fecha:', e);
+  }
+  
+  return `
+    <div class="resource-card ${isMyResource ? 'my-resource' : ''}" data-id="${recurso.id}">
+      <div class="resource-header">
+        <span class="resource-category category-${recurso.categoria}">
+          ${getCategoryIcon(recurso.categoria)} ${recurso.categoria}
+        </span>
+        ${isMyResource ? '<span class="my-resource-badge">Mío</span>' : ''}
+      </div>
+      
+      <h3 class="resource-title">${recurso.titulo}</h3>
+      
+      <!-- Vista previa del archivo -->
+      <div class="resource-preview">
+        ${getFilePreview(recurso.archivo)}
+      </div>
+      
+      <div class="resource-meta">
+        <div class="resource-info">
+          <span class="resource-subject">📚 ${recurso.materia}</span>
+          <span class="resource-level">🎓 ${capitalize(recurso.nivel)}</span>
+        </div>
+        <div class="resource-author">
+          <span>👤 ${recurso.autorNombre || 'Usuario'}</span>
+        </div>
+        <div class="resource-date">
+          <span>📅 ${fechaStr}</span>
+        </div>
+      </div>
+      
+      ${recurso.descripcion ? `<p class="resource-description">${recurso.descripcion}</p>` : ''}
+      
+      <div class="resource-actions">
+        <a href="${recurso.archivo}" target="_blank" class="btn-download" onclick="incrementarDescargas('${recurso.id}')">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+          Descargar
+        </a>
+        
+        ${isMyResource ? `
+          <button class="btn-delete" onclick="eliminarRecurso('${recurso.id}')" title="Eliminar recurso">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M3 6h18M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </button>
+        ` : ''}
+        
+        <span class="download-count">⬇️ ${recurso.descargas || 0}</span>
+      </div>
+    </div>
+  `;
+}
+
+// Funciones helper
+function getCategoryIcon(categoria) {
+  const icons = {
+    'apuntes': '📝',
+    'examenes': '📊', 
+    'proyectos': '🚀',
+    'libros': '📚'
+  };
+  return icons[categoria] || '📄';
+}
+
+// ✅ FUNCIÓN GETFILEPREVIEW COMPLETAMENTE MEJORADA
+function getFilePreview(url) {
+  if (!url) return '<span class="file-placeholder">📄 Sin archivo</span>';
+  
+  console.log('🔍 Procesando URL:', url);
+  
+  let fileId = '';
+  let processedUrl = url;
+  
+  // Detectar y procesar URLs de Uploadcare
+  if (url.includes('ucarecdn.com') || url.includes('uploadcare.com') || url.includes('2kupnha500.ucarecdn.net')) {
+    
+    // Extraer file ID de diferentes formatos
+    if (url.includes('ucarecdn.com/')) {
+      fileId = url.split('ucarecdn.com/')[1].split('/')[0];
+      processedUrl = `https://ucarecdn.com/${fileId}/`;
+    } else if (url.includes('2kupnha500.ucarecdn.net/')) {
+      fileId = url.split('2kupnha500.ucarecdn.net/')[1].split('/')[0];
+      processedUrl = `https://ucarecdn.com/${fileId}/`;
+    } else {
+      // Si es solo el ID
+      fileId = url.replace(/^https?:\/\//, '').replace(/\/$/, '');
+      processedUrl = `https://ucarecdn.com/${fileId}/`;
+    }
+    
+    console.log('📎 File ID extraído:', fileId);
+    console.log('🔧 URL procesada:', processedUrl);
+    
+    // Construir URL optimizada para vista previa
+    const previewUrl = `https://ucarecdn.com/${fileId}/-/preview/400x300/-/format/auto/-/quality/smart/`;
+    
+    return `
+      <div class="resource-preview-container">
+        <div class="image-loader">⏳</div>
+        <img src="${previewUrl}" 
+             alt="Vista previa de ${fileId}" 
+             class="resource-image" 
+             loading="lazy" 
+             data-loading="true"
+             data-original-url="${processedUrl}"
+             data-file-id="${fileId}"
+             onerror="handleImageError(this, '${processedUrl}', '${fileId}')"
+             onload="handleImageLoad(this)">
+      </div>
+    `;
+  }
+  
+  // Para otras URLs, detectar por extensión
+  const ext = url.split('.').pop()?.toLowerCase();
+  const imageExts = ['jpg', 'jpeg', 'png', 'gif', 'webp', 'svg'];
+  
+  if (imageExts.includes(ext)) {
+    return `
+      <div class="resource-preview-container">
+        <div class="image-loader">⏳</div>
+        <img src="${url}" 
+             alt="Vista previa" 
+             class="resource-image" 
+             loading="lazy" 
+             data-loading="true"
+             onerror="showFileLink(this, '${url}')"
+             onload="handleImageLoad(this)">
+      </div>
+    `;
+  }
+  
+  // Para archivos no imagen
+  return showFileLink(null, url);
+}
+
+// ✅ FUNCIÓN MEJORADA PARA MANEJAR ERRORES DE IMAGEN
+function handleImageError(img, originalUrl, fileId = null) {
+  console.warn('❌ Error cargando imagen:', originalUrl);
+  
+  if (fileId) {
+    // Lista de URLs alternativas para Uploadcare
+    const currentSrc = img.src;
+    const alternativeUrls = [
+      `https://ucarecdn.com/${fileId}/-/preview/400x300/`,
+      `https://ucarecdn.com/${fileId}/-/resize/400x300/`,
+      `https://ucarecdn.com/${fileId}/-/format/auto/`,
+      `https://ucarecdn.com/${fileId}/`,
+      `https://2kupnha500.ucarecdn.net/${fileId}/`,
+      `https://2kupnha500.ucarecdn.net/${fileId}/-/preview/`
+    ];
+    
+    // Encontrar el siguiente intento
+    let currentIndex = -1;
+    for (let i = 0; i < alternativeUrls.length; i++) {
+      if (currentSrc.includes(alternativeUrls[i].split('/-/')[0])) {
+        currentIndex = i;
+        break;
+      }
+    }
+    
+    const nextIndex = currentIndex + 1;
+    
+    if (nextIndex < alternativeUrls.length) {
+      console.log(`🔄 Intentando URL ${nextIndex + 1}:`, alternativeUrls[nextIndex]);
+      img.src = alternativeUrls[nextIndex];
+      return;
+    }
+  }
+  
+  // Si todos los intentos fallan, mostrar enlace
+  showFileLink(img, originalUrl);
+}
+
+// ✅ FUNCIÓN PARA MANEJAR CARGA EXITOSA DE IMAGEN
+function handleImageLoad(img) {
+  console.log('✅ Imagen cargada correctamente:', img.src);
+  
+  // Remover loader
+  const loader = img.parentElement.querySelector('.image-loader');
+  if (loader) {
+    loader.remove();
+  }
+  
+  // Actualizar atributos
+  img.setAttribute('data-loading', 'false');
+  img.classList.add('loaded');
+}
+
+// ✅ FUNCIÓN MEJORADA PARA MOSTRAR ENLACE DE ARCHIVO
+function showFileLink(img, originalUrl) {
+  const linkHtml = `
+    <div class="file-link-preview">
+      <div class="file-icon">📎</div>
+      <div class="file-info">
+        <span class="file-name">Ver archivo</span>
+        <a href="${originalUrl}" target="_blank" class="file-view-link">Abrir archivo</a>
+      </div>
+    </div>
+  `;
+  
+  if (img && img.parentElement) {
+    // Remover loader si existe
+    const loader = img.parentElement.querySelector('.image-loader');
+    if (loader) loader.remove();
+    
+    img.parentElement.innerHTML = linkHtml;
+  } else {
+    return linkHtml;
+  }
+}
+
+function capitalize(str) {
+  return str ? str.charAt(0).toUpperCase() + str.slice(1) : '';
+}
+
+// Función para incrementar descargas
+async function incrementarDescargas(recursoId) {
+  try {
+    if (doc && updateDoc && increment && db) {
+      const recursoRef = doc(db, 'recursos', recursoId);
+      await updateDoc(recursoRef, {
+        descargas: increment(1)
+      });
+      console.log('✅ Descarga registrada');
+    }
+  } catch (error) {
+    console.error('❌ Error al registrar descarga:', error);
+  }
+}
+
+// Función para eliminar recurso
+async function eliminarRecurso(recursoId) {
+  if (!confirm('¿Estás seguro de eliminar este recurso?')) return;
+  
+  try {
+    if (doc && deleteDoc && db) {
+      await deleteDoc(doc(db, 'recursos', recursoId));
+      showToast('Recurso eliminado', 'success');
+      cargarRecursos(); // Recargar lista
+    }
+  } catch (error) {
+    console.error('❌ Error al eliminar:', error);
+    showToast('Error al eliminar recurso', 'error');
+  }
+}
+
+// Función de diagnóstico para URLs
+function diagnosticarURL(url) {
+  console.log('🔍 Diagnóstico de URL:', url);
+  
+  if (!url) {
+    console.log('❌ URL vacía');
+    return false;
+  }
+  
+  // Probar si la URL es accesible
+  const img = new Image();
+  
+  img.onload = () => {
+    console.log('✅ URL accesible:', url);
+  };
+  
+  img.onerror = () => {
+    console.log('❌ URL no accesible:', url);
+    
+    // Si es Uploadcare, sugerir alternativas
+    if (url.includes('ucarecdn.com') || url.includes('uploadcare.com')) {
+      console.log('💡 Sugerencias para Uploadcare:');
+      console.log('- Verificar que el archivo no haya sido eliminado');
+      console.log('- Comprobar configuración de privacidad');
+      console.log('- Intentar agregar transformaciones: /-/preview/');
+    }
+  };
+  
+  img.src = url;
+}
+
+// Limpieza de recursos
+window.addEventListener('beforeunload', () => {
+  // Limpiar timeouts pendientes
+  if (redirectTimeout) {
+    clearTimeout(redirectTimeout);
+  }
+  
+  // Limpiar estado de autenticación
+  AuthUtils.clearRedirectState();
+  
+  console.log('🧹 Recursos limpiados antes de salir');
+});
 
 // Inicializar
 if (document.readyState === 'loading') {
@@ -982,7 +1534,26 @@ if (document.readyState === 'loading') {
   setupLogoutButtons();
 }
 
-// Exportaciones simples
+// Cargar recursos cuando se cambie a la sección
+document.addEventListener('DOMContentLoaded', function() {
+  // Cargar recursos al inicio si estamos en la sección
+  const currentSection = localStorage.getItem('activeSection');
+  if (currentSection === 'resources') {
+    setTimeout(cargarRecursos, 1000);
+  }
+  
+  // Cargar recursos cuando se navegue a la sección
+  const navItems = document.querySelectorAll('.nav-item');
+  navItems.forEach(item => {
+    if (item.dataset.section === 'resources') {
+      item.addEventListener('click', () => {
+        setTimeout(cargarRecursos, 100);
+      });
+    }
+  });
+});
+
+// Exportaciones
 export { 
   auth, 
   db,
@@ -1004,7 +1575,7 @@ export {
   getStoredUserData
 };
 
-// Exportación global ACTUALIZADA
+// Exportación global
 window.EstudiaFacilAuth = {
   auth: auth,
   db: db,
@@ -1033,94 +1604,270 @@ window.EstudiaFacilAuth = {
   forceUpdateUI: () => AuthManager.forceUpdateUI()
 };
 
-// Debug utilities mejoradas para localhost
-if (AuthUtils.isLocalhost()) {
-  window.EstudiaFacilDebug = {
-    AuthManager: AuthManager,
-    AuthUtils: AuthUtils,
-    doLogin: ()=> window.doLogin ? window.doLogin() : AuthManager.signInWithGoogle(),
-    user: getCurrentUser,
-    firebaseUser: () => auth.currentUser,
-    login: () => AuthManager.signInWithGoogle(),
-    logout: () => AuthManager.signOutUser(),
-    logoutFromProfile: () => AuthManager.logoutFromProfile(),
-    clearRedirectState: () => AuthUtils.clearRedirectState(),
-    clearStorage: () => AuthUtils.clearUserStorage(),
-    forceUpdateUI: () => AuthManager.forceUpdateUI(),
-    
-    status: () => ({
-      currentUser: currentUser ? currentUser.displayName : 'none',
-      firebaseUser: auth.currentUser ? auth.currentUser.displayName : 'none',
-      isAuthInitialized: isAuthInitialized,
-      loginInProgress: loginInProgress,
-      redirecting: localStorage.getItem('estudiaFacil_redirecting') === 'true',
-      timestamp: new Date().toISOString(),
-      loginBtnVisible: getLoginBtn() ? getLoginBtn().style.display !== 'none' : 'not found',
-      userProfileVisible: getUserProfile() ? getUserProfile().style.display !== 'none' : 'not found'
-    }),
-    
-    emergencyReset: () => {
-      AuthUtils.logWithIcon('RESET DE EMERGENCIA', 'warning');
-      
-      if (redirectTimeout) {
-        clearTimeout(redirectTimeout);
-        redirectTimeout = null;
-      }
-      
-      AuthUtils.clearRedirectState();
-      AuthUtils.clearUserStorage();
-      loginInProgress = false;
-      currentUser = null;
-      
-      AuthManager.updateLoginButton('Iniciar Sesión', false);
-      AuthManager.updateUI(null);
-      
-      setTimeout(() => {
-        AuthManager.setupLoginButton();
-      }, 500);
-      
-      AuthUtils.logWithIcon('Reset completado', 'success');
-      AuthUtils.showToast('Reset completado', 'info');
-    },
-    
-    // Nueva: Función para diagnosticar UI
-    diagnoseUI: () => {
-      const firebaseUser = auth.currentUser;
-      const loginBtn = getLoginBtn();
-      const userProfile = getUserProfile();
-      
-      console.log('=== DIAGNÓSTICO UI ===');
-      console.log('Firebase User:', firebaseUser ? firebaseUser.displayName : 'null');
-      console.log('Current User:', currentUser ? currentUser.displayName : 'null');
-      console.log('Login Button Display:', loginBtn ? loginBtn.style.display : 'not found');
-      console.log('User Profile Display:', userProfile ? userProfile.style.display : 'not found');
-      console.log('Login In Progress:', loginInProgress);
-      console.log('Auth Initialized:', isAuthInitialized);
-      console.log('===================');
-      
-      if (firebaseUser && (!loginBtn || loginBtn.style.display !== 'none')) {
-        AuthUtils.logWithIcon('PROBLEMA DETECTADO: Usuario logueado pero botón login visible', 'warning');
-        AuthUtils.logWithIcon('Ejecutando forceUpdateUI...', 'loading');
-        AuthManager.forceUpdateUI();
-      }
-    },
-    
-    // Nueva: Test logout desde perfil
-    testProfileLogout: () => {
-      AuthUtils.logWithIcon('PROBANDO LOGOUT DESDE PERFIL', 'logout');
-      AuthManager.logoutFromProfile();
-    }
-  };
-  
-  AuthUtils.logWithIcon('DEBUG MEJORADO DISPONIBLE', 'rocket');
-  console.log('🔧 EstudiaFacilDebug.status() - Estado completo');
-  console.log('🔧 EstudiaFacilDebug.diagnoseUI() - Diagnosticar UI');
-  console.log('🔧 EstudiaFacilDebug.forceUpdateUI() - Forzar actualización UI');
-  console.log('🔧 EstudiaFacilDebug.testProfileLogout() - Probar logout desde perfil');
-  console.log('🔧 EstudiaFacilDebug.emergencyReset() - Reset total');
-}
-
-AuthUtils.logWithIcon('EstudiaFácil v3.0 - LISTO', 'rocket');
+// Exportar funciones globalmente
+window.showToast = showToast;
+window.cargarRecursos = cargarRecursos;
+window.incrementarDescargas = incrementarDescargas;
+window.eliminarRecurso = eliminarRecurso;
+window.handleImageError = handleImageError;
+window.handleImageLoad = handleImageLoad;
+window.showFileLink = showFileLink;
+window.diagnosticarURL = diagnosticarURL;
 window.doLogin = window.doLogin || (() => AuthManager.signInWithGoogle());
 
-/* ===== FIN DEL ARCHIVO MAIN.JS COMPLETO ===== */
+console.log('✅ EstudiaFácil main.js cargado completamente - Versión optimizada para imágenes');
+function solucionarVisualizacionImagenes() {
+  // 1. Función mejorada para extraer IDs de Uploadcare de manera más robusta
+  window.extraerIdUploadcare = function(url) {
+    if (!url) return null;
+    
+    console.log('🔍 Analizando URL para extraer ID:', url);
+    
+    // Patrones comunes de Uploadcare
+    const patrones = [
+      /ucarecdn\.com\/([a-zA-Z0-9-_]+)\/?/,
+      /2kupnha500\.ucarecdn\.net\/([a-zA-Z0-9-_]+)\/?/,
+      /uploadcare\.com\/[^\/]+\/([a-zA-Z0-9-_]+)\/?/,
+      /^([a-zA-Z0-9-_]{36})$/  // UUID directo
+    ];
+    
+    for (const patron of patrones) {
+      const match = url.match(patron);
+      if (match && match[1]) {
+        console.log('✅ ID extraído correctamente:', match[1]);
+        return match[1];
+      }
+    }
+    
+    console.warn('⚠️ No se pudo extraer ID de Uploadcare de:', url);
+    return null;
+  };
+  
+  // 2. Función mejorada para construir URLs seguras de Uploadcare
+  window.construirUrlUploadcare = function(fileId, tipo = 'preview') {
+    if (!fileId) return null;
+    
+    const opciones = {
+      preview: `https://ucarecdn.com/${fileId}/-/preview/400x300/-/format/auto/-/quality/smart/`,
+      original: `https://ucarecdn.com/${fileId}/`,
+      thumbnail: `https://ucarecdn.com/${fileId}/-/scale_crop/200x200/center/-/format/auto/`,
+      alternativo: `https://2kupnha500.ucarecdn.net/${fileId}/`,
+    };
+    
+    return opciones[tipo] || opciones.original;
+  };
+  
+  // 3. Reemplazar getFilePreview con versión mejorada
+  window.getFilePreview = function(url) {
+    if (!url) return '<span class="file-placeholder">📄 Sin archivo</span>';
+    
+    console.log('🔍 Procesando URL para vista previa:', url);
+    
+    // Extraer ID de Uploadcare
+    const fileId = window.extraerIdUploadcare(url);
+    
+    if (fileId) {
+      // Si tenemos ID de Uploadcare, crear una vista previa con múltiples fallbacks
+      const previewUrl = window.construirUrlUploadcare(fileId, 'preview');
+      const originalUrl = window.construirUrlUploadcare(fileId, 'original');
+      const alternativoUrl = window.construirUrlUploadcare(fileId, 'alternativo');
+      
+      return `
+        <div class="resource-preview-container">
+          <div class="image-loader">⏳</div>
+          <img src="${previewUrl}" 
+               alt="Vista previa" 
+               class="resource-image" 
+               loading="lazy" 
+               data-loading="true"
+               data-file-id="${fileId}"
+               data-original-url="${originalUrl}"
+               data-alt-url="${alternativoUrl}"
+               data-attempts="0"
+               onerror="mejorarImagenError(this)"
+               onload="mejorarImagenCargada(this)">
+        </div>
+      `;
+    }
+    
+    // Para URLs que no son de Uploadcare, intentar detectar si es imagen
+    const ext = url.split('.').pop()?.toLowerCase();
+    const imageExts = ['jpg', 'jpeg', 'png', 'gif', 'webp', 'svg', 'avif'];
+    
+    if (imageExts.includes(ext)) {
+      return `
+        <div class="resource-preview-container">
+          <div class="image-loader">⏳</div>
+          <img src="${url}" 
+               alt="Vista previa" 
+               class="resource-image" 
+               loading="lazy" 
+               data-loading="true"
+               onerror="window.showFileLink(this, '${url}')"
+               onload="mejorarImagenCargada(this)">
+        </div>
+      `;
+    }
+    
+    // Para archivos no imagen
+    return window.showFileLink(null, url);
+  };
+  
+  // 4. Manejador mejorado para errores de imagen
+  window.mejorarImagenError = function(img) {
+    // Obtener datos
+    const fileId = img.dataset.fileId;
+    const originalUrl = img.dataset.originalUrl || img.src;
+    const altUrl = img.dataset.altUrl;
+    const attempts = parseInt(img.dataset.attempts || '0') + 1;
+    
+    console.warn(`⚠️ Error cargando imagen (intento ${attempts}):`, img.src);
+    
+    // Actualizar contador de intentos
+    img.dataset.attempts = attempts.toString();
+    
+    // Si tenemos fileId de Uploadcare
+    if (fileId) {
+      // Lista de URLs alternativas para probar
+      const urlsAlternativas = [
+        `https://ucarecdn.com/${fileId}/-/preview/400x300/-/format/auto/`,
+        `https://ucarecdn.com/${fileId}/-/resize/400x/-/quality/lightest/`,
+        `https://2kupnha500.ucarecdn.net/${fileId}/`,
+        `https://ucarecdn.com/${fileId}/`,
+        `https://ucarecdn.com/${fileId}/-/scale_crop/400x300/center/`,
+        // Opción para forzar HTTP (por si hay problemas con HTTPS)
+        `http://ucarecdn.com/${fileId}/-/preview/400x300/`
+      ];
+      
+      // Limitar intentos
+      if (attempts <= urlsAlternativas.length) {
+        const nextUrl = urlsAlternativas[attempts - 1];
+        console.log(`🔄 Probando URL alternativa ${attempts}:`, nextUrl);
+        img.src = nextUrl;
+        return;
+      }
+    }
+    
+    // Si llegamos aquí, mostrar enlace al archivo original
+    console.warn('❌ No se pudo cargar la imagen después de múltiples intentos');
+    window.showFileLink(img, originalUrl);
+  };
+  
+  // 5. Manejador mejorado para carga exitosa
+  window.mejorarImagenCargada = function(img) {
+    console.log('✅ Imagen cargada correctamente:', img.src);
+    
+    // Remover loader
+    const loader = img.parentElement.querySelector('.image-loader');
+    if (loader) loader.remove();
+    
+    // Actualizar atributos
+    img.setAttribute('data-loading', 'false');
+    img.classList.add('loaded');
+    
+    // Añadir clase de animación suave
+    img.classList.add('fade-in');
+    
+    // Añadir zoom al hover
+    img.parentElement.classList.add('zoom-container');
+  };
+  
+  // 6. Estilos adicionales para mejorar visualización
+  const estilos = document.createElement('style');
+  estilos.textContent = `
+    .resource-preview-container {
+      position: relative;
+      overflow: hidden;
+      border-radius: 8px;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+    
+    .resource-image {
+      transition: opacity 0.3s ease, transform 0.3s ease;
+    }
+    
+    .resource-image.fade-in {
+      animation: fadeIn 0.5s ease-in-out;
+    }
+    
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+    
+    .zoom-container .resource-image:hover {
+      transform: scale(1.05);
+    }
+    
+    .image-loader {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      z-index: 1;
+      font-size: 2rem;
+      animation: spin 1.5s linear infinite;
+    }
+    
+    @keyframes spin {
+      from { transform: translate(-50%, -50%) rotate(0deg); }
+      to { transform: translate(-50%, -50%) rotate(360deg); }
+    }
+  `;
+  document.head.appendChild(estilos);
+  
+  console.log('✅ Mejoras de visualización de imágenes aplicadas');
+}
+
+// 7. Función para diagnosticar y arreglar problemas específicos
+function diagnosticarProblemasImagenes() {
+  console.log('🔍 Iniciando diagnóstico de problemas de imágenes...');
+  
+  // Verificar CORS
+  const corsTest = new Image();
+  corsTest.onload = () => console.log('✅ CORS: OK para Uploadcare');
+  corsTest.onerror = () => console.warn('⚠️ CORS: Posibles problemas con Uploadcare');
+  corsTest.src = 'https://ucarecdn.com/assets/images/favicon.ico';
+  
+  // Probar conexión a Uploadcare
+  fetch('https://ucarecdn.com/assets/images/favicon.ico')
+    .then(r => r.ok ? console.log('✅ Conexión a Uploadcare: OK') : console.warn('⚠️ Conexión a Uploadcare: Problemas'))
+    .catch(e => console.error('❌ Error de conexión a Uploadcare:', e));
+    
+  // Buscar imágenes actuales y verificar estado
+  setTimeout(() => {
+    const imagenes = document.querySelectorAll('.resource-image');
+    console.log(`🔍 Encontradas ${imagenes.length} imágenes en la página`);
+    
+    imagenes.forEach((img, i) => {
+      console.log(`Imagen ${i+1}:`, {
+        src: img.src,
+        isLoaded: !img.complete ? 'cargando' : img.naturalWidth === 0 ? 'error' : 'ok',
+        fileId: img.dataset.fileId || 'N/A'
+      });
+    });
+  }, 2000);
+  
+  console.log('✅ Diagnóstico de imágenes completado');
+}
+
+// Ejecutar las mejoras
+document.addEventListener('DOMContentLoaded', () => {
+  solucionarVisualizacionImagenes();
+  
+  // Agregar botón de diagnóstico
+  const botonDiagnostico = document.createElement('button');
+  botonDiagnostico.textContent = 'Diagnosticar Imágenes';
+  botonDiagnostico.className = 'btn-diagnostico';
+  botonDiagnostico.style.cssText = 'position: fixed; bottom: 20px; right: 20px; z-index: 9999; background: #00f5ff; color: #000; padding: 8px 16px; border-radius: 4px; display: none;';
+  botonDiagnostico.onclick = diagnosticarProblemasImagenes;
+  document.body.appendChild(botonDiagnostico);
+  
+  // Mostrar botón solo en desarrollo (puedes activarlo con la consola: document.querySelector('.btn-diagnostico').style.display = 'block')
+  
+  // Reemplazar funciones existentes con las mejoradas
+  window.handleImageError = window.mejorarImagenError;
+  window.handleImageLoad = window.mejorarImagenCargada;
+  
+  console.log('🔧 Sistema de imágenes mejorado instalado');
+});

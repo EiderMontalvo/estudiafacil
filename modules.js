@@ -42,9 +42,8 @@ let allSurveys = [];
 let allOpinions = [];
 let uploadcareWidget = null;
 
-// SVG Icons modernos y centralizados
+// SVG Icons centralizados
 const ModuleIcons = {
-  // Recursos
   document: `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
     <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
     <polyline points="14,2 14,8 20,8" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
@@ -54,7 +53,6 @@ const ModuleIcons = {
     <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
   </svg>`,
   
-  // Encuestas
   survey: `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
     <path d="M9 11H5a2 2 0 0 0-2 2v7a2 2 0 0 0 2 2h4a2 2 0 0 0 2-2v-7a2 2 0 0 0-2-2zM21 11h-4a2 2 0 0 0-2 2v7a2 2 0 0 0 2 2h4a2 2 0 0 0 2-2v-7a2 2 0 0 0-2-2z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
   </svg>`,
@@ -63,7 +61,6 @@ const ModuleIcons = {
     <path d="M12 20h9M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
   </svg>`,
   
-  // Opiniones
   heart: `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
     <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
   </svg>`,
@@ -80,7 +77,6 @@ const ModuleIcons = {
     <path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8M16 6l-4-4-4 4M12 2v13" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
   </svg>`,
   
-  // Generales
   user: `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
     <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
     <circle cx="12" cy="7" r="4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
@@ -110,7 +106,7 @@ const ModuleIcons = {
   </svg>`
 };
 
-// Utilidades mejoradas
+// Utilidades optimizadas
 class Utils {
   static showToast(message, type = 'success') {
     if (window.EstudiaFacilAuth?.showToast) {
@@ -119,29 +115,38 @@ class Utils {
     
     const toastContainer = document.getElementById('toastContainer');
     if (!toastContainer) {
-      console.log(`Toast [${type}]: ${message}`);
       return;
     }
     
     const toast = document.createElement('div');
     toast.className = `toast ${type}`;
     
-    const iconMap = {
-      success: '#00f5ff',
-      error: '#ff1493', 
-      info: '#00f5ff',
-      warning: '#ff6b6b'
+    toast.style.cssText = `
+      background: var(--surface, #1e293b) !important;
+      color: var(--text, #ffffff) !important;
+      border: 1px solid var(--border, rgba(255, 255, 255, 0.1)) !important;
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      padding: 1rem;
+      border-radius: 8px;
+      margin-bottom: 0.5rem;
+      opacity: 1;
+      transform: translateX(0);
+    `;
+    
+    const colorMap = {
+      success: '#10b981',
+      error: '#ef4444',
+      info: '#3b82f6',
+      warning: '#f59e0b'
     };
     
-    const iconSvg = type === 'success' ? ModuleIcons.heart : 
-                   type === 'error' ? ModuleIcons.trash :
-                   type === 'warning' ? ModuleIcons.clock : ModuleIcons.activity;
-    
     toast.innerHTML = `
-      <div class="toast-icon" style="color: ${iconMap[type] || '#00f5ff'};">
-        ${iconSvg}
+      <div class="toast-icon" style="color: ${colorMap[type] || '#00f5ff'};">
+        ${type === 'success' ? ModuleIcons.heart : ModuleIcons.activity}
       </div>
-      <span class="toast-message">${message}</span>
+      <span class="toast-message" style="color: var(--text, #ffffff) !important;">${message}</span>
     `;
     
     toastContainer.appendChild(toast);
@@ -200,10 +205,41 @@ class Utils {
     
     if (!modal) return;
     
-    if (titleEl) titleEl.textContent = title;
-    if (msgEl) msgEl.textContent = msg;
+    modal.style.cssText = `
+      display: flex !important;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.8) !important;
+      z-index: 9999;
+      align-items: center;
+      justify-content: center;
+    `;
     
-    modal.style.display = 'flex';
+    const modalContent = modal.querySelector('.modal-content');
+    if (modalContent) {
+      modalContent.style.cssText = `
+        background: var(--surface, #1e293b) !important;
+        color: var(--text, #ffffff) !important;
+        border: 1px solid var(--border, rgba(255, 255, 255, 0.1)) !important;
+        padding: 2rem;
+        border-radius: 12px;
+        max-width: 400px;
+        width: 90%;
+      `;
+    }
+    
+    if (titleEl) {
+      titleEl.textContent = title;
+      titleEl.style.color = 'var(--text, #ffffff) !important';
+    }
+    if (msgEl) {
+      msgEl.textContent = msg;
+      msgEl.style.color = 'var(--text-muted, #94a3b8) !important';
+    }
+    
     document.body.style.overflow = 'hidden';
     
     setTimeout(() => {
@@ -314,7 +350,6 @@ class DashboardManager {
       }
     });
     
-    // Footer stats
     const footerElements = [
       { id: 'footerResources', value: allResources.length },
       { id: 'footerSurveys', value: allSurveys.length },
@@ -354,9 +389,7 @@ class DashboardManager {
     if (recent.length === 0) {
       container.innerHTML = `
         <div class="activity-placeholder">
-          <div class="placeholder-icon" style="color: var(--neon-cyan);">
-            ${ModuleIcons.activity}
-          </div>
+          <div class="placeholder-icon">${ModuleIcons.activity}</div>
           <p>No hay actividad reciente</p>
         </div>
       `;
@@ -372,15 +405,13 @@ class DashboardManager {
       
       return `
         <div class="activity-item">
-          <div class="activity-icon" style="color: var(--neon-cyan);">
-            ${iconMap[activity.type] || ModuleIcons.activity}
-          </div>
+          <div class="activity-icon">${iconMap[activity.type] || ModuleIcons.activity}</div>
           <div class="activity-content">
             <h4>${Utils.truncate(activity.titulo, 30)}</h4>
             <p>
-              <span style="color: var(--neon-cyan);">${ModuleIcons.user}</span>
+              <span>${ModuleIcons.user}</span>
               ${activity.autorNombre || 'Anónimo'} • 
-              <span style="color: var(--neon-pink);">${ModuleIcons.clock}</span>
+              <span>${ModuleIcons.clock}</span>
               ${Utils.formatDate(activity.timestamp)}
             </p>
           </div>
@@ -406,9 +437,7 @@ class DashboardManager {
     if (sorted.length === 0) {
       container.innerHTML = `
         <div class="activity-placeholder">
-          <div class="placeholder-icon" style="color: var(--neon-cyan);">
-            ${ModuleIcons.survey}
-          </div>
+          <div class="placeholder-icon">${ModuleIcons.survey}</div>
           <p>No hay categorías disponibles</p>
         </div>
       `;
@@ -418,9 +447,7 @@ class DashboardManager {
     container.innerHTML = sorted.map(([cat, count]) => `
       <div class="category-item">
         <div class="category-info">
-          <span class="category-icon" style="color: var(--neon-cyan);">
-            ${Utils.getCategoryIcon(cat)}
-          </span>
+          <span class="category-icon">${Utils.getCategoryIcon(cat)}</span>
           <span class="category-name">${ResourcesManager.getCategoryName(cat)}</span>
         </div>
         <span class="category-count">${count}</span>
@@ -428,8 +455,7 @@ class DashboardManager {
     `).join('');
   }
 }
-
-// Resources Manager mejorado
+// Resources Manager optimizado
 class ResourcesManager {
   static openUploadModal() {
     const modal = document.getElementById('uploadModal');
@@ -595,25 +621,23 @@ class ResourcesManager {
         <article class="resource-card ${isMine ? 'my-resource' : ''}" data-category="${resource.categoria || 'otros'}">
           <div class="resource-header">
             <span class="resource-category">
-              <span style="color: var(--neon-cyan);">${Utils.getCategoryIcon(resource.categoria)}</span>
+              <span class="resource-category-icon">${Utils.getCategoryIcon(resource.categoria)}</span>
               ${this.getCategoryName(resource.categoria)}
             </span>
             ${isMine ? `
               <div class="resource-actions-menu">
                 <button class="resource-menu-btn" onclick="ResourcesManager.toggleMenu('${resource.id}')">
-                  <span style="color: var(--neon-pink);">${ModuleIcons.trash}</span>
+                  <span class="resource-menu-icon">${ModuleIcons.trash}</span>
                 </button>
                 <div class="resource-menu" id="menu-${resource.id}">
                   <button onclick="ResourcesManager.deleteResource('${resource.id}', '${(resource.titulo || '').replace(/'/g, "\\'")}')">
-                    <span style="color: var(--error);">${ModuleIcons.trash}</span>
+                    <span class="resource-delete-icon">${ModuleIcons.trash}</span>
                     Eliminar
                   </button>
                 </div>
               </div>
             ` : `
-              <span class="file-type-icon" style="color: var(--neon-cyan);">
-                ${ModuleIcons.document}
-              </span>
+              <span class="file-type-icon">${ModuleIcons.document}</span>
             `}
           </div>
           
@@ -621,19 +645,19 @@ class ResourcesManager {
           
           <div class="resource-meta">
             <div class="resource-subject">
-              <span style="color: var(--neon-cyan);">${ModuleIcons.book}</span>
+              <span class="resource-subject-icon">${ModuleIcons.book}</span>
               ${resource.materia || 'Sin materia'}
             </div>
             ${resource.nivel ? `
               <div class="resource-level">
-                <span style="color: var(--neon-pink);">${ModuleIcons.activity}</span>
+                <span class="resource-level-icon">${ModuleIcons.activity}</span>
                 ${this.getLevelName(resource.nivel)}
               </div>
             ` : ''}
             <div class="resource-author">
-              <span style="color: var(--neon-cyan);">${ModuleIcons.user}</span>
+              <span class="resource-author-icon">${ModuleIcons.user}</span>
               Por ${resource.autorNombre || 'Anónimo'} • 
-              <span style="color: var(--neon-pink);">${ModuleIcons.clock}</span>
+              <span class="resource-date-icon">${ModuleIcons.clock}</span>
               ${Utils.formatDate(resource.timestamp)}
             </div>
           </div>
@@ -642,7 +666,7 @@ class ResourcesManager {
           
           <div class="resource-actions">
             <a href="${url}" target="_blank" rel="noopener noreferrer" class="btn-download">
-              <span style="color: var(--neon-cyan);">${ModuleIcons.download}</span>
+              <span class="download-icon">${ModuleIcons.download}</span>
               Ver recurso
             </a>
           </div>
@@ -833,13 +857,11 @@ class SurveysManager {
     if (!surveys?.length) {
       list.innerHTML = `
         <div class="empty-state">
-          <div class="empty-icon" style="color: var(--neon-cyan);">
-            ${ModuleIcons.survey}
-          </div>
+          <div class="empty-icon">${ModuleIcons.survey}</div>
           <h3>No hay encuestas</h3>
           <p>¡Sé el primero en crear una!</p>
           <button class="btn-primary" onclick="SurveysManager.openSurveyModal()">
-            <span style="color: var(--neon-cyan);">${ModuleIcons.plus}</span>
+            <span class="btn-icon">${ModuleIcons.plus}</span>
             <span class="btn-text">Crear Primera Encuesta</span>
           </button>
         </div>
@@ -856,12 +878,12 @@ class SurveysManager {
         <div class="survey-card">
           <div class="survey-header">
             <span class="survey-category">
-              <span style="color: var(--neon-cyan);">${ModuleIcons.survey}</span>
+              <span class="survey-category-icon">${ModuleIcons.survey}</span>
               ${this.getCategoryName(survey.categoria)}
             </span>
             ${isMine ? `
               <button class="resource-menu-btn" onclick="SurveysManager.deleteSurvey('${survey.id}', '${(survey.titulo || '').replace(/'/g, "\\'")}')">
-                <span style="color: var(--error);">${ModuleIcons.trash}</span>
+                <span class="survey-delete-icon">${ModuleIcons.trash}</span>
               </button>
             ` : ''}
           </div>
@@ -872,18 +894,18 @@ class SurveysManager {
           
           <div class="survey-meta">
             <div>
-              <span style="color: var(--neon-cyan);">${ModuleIcons.user}</span>
+              <span class="survey-author-icon">${ModuleIcons.user}</span>
               Por ${survey.autorNombre} • 
-              <span style="color: var(--neon-pink);">${ModuleIcons.clock}</span>
+              <span class="survey-date-icon">${ModuleIcons.clock}</span>
               ${Utils.formatDate(survey.timestamp)}
             </div>
             <div class="survey-stats">
               <span class="survey-stat">
-                <span style="color: var(--neon-cyan);">${ModuleIcons.edit}</span>
+                <span class="survey-questions-icon">${ModuleIcons.edit}</span>
                 <span>${survey.preguntas?.length || 0} preguntas</span>
               </span>
               <span class="survey-stat">
-                <span style="color: var(--neon-pink);">${ModuleIcons.user}</span>
+                <span class="survey-responses-icon">${ModuleIcons.user}</span>
                 <span>${survey.respuestas || 0} respuestas</span>
               </span>
             </div>
@@ -891,7 +913,7 @@ class SurveysManager {
           
           <div class="survey-actions">
             <button class="btn-participate" onclick="SurveysManager.participate('${survey.id}')">
-              <span style="color: var(--neon-cyan);">${ModuleIcons.edit}</span>
+              <span class="participate-icon">${ModuleIcons.edit}</span>
               Participar
             </button>
           </div>
@@ -927,7 +949,7 @@ class SurveysManager {
             <option value="rating">Calificación (1-5)</option>
           </select>
           <button type="button" onclick="SurveysManager.removeQuestion('${id}')" class="btn-secondary btn-small">
-            <span style="color: var(--error);">${ModuleIcons.trash}</span>
+            <span class="remove-question-icon">${ModuleIcons.trash}</span>
           </button>
         </div>
         
@@ -943,7 +965,7 @@ class SurveysManager {
             <input type="text" placeholder="Opción 2" class="option-text">
           </div>
           <button type="button" onclick="SurveysManager.addOption('${id}')" class="btn-outline btn-small">
-            <span style="color: var(--neon-cyan);">${ModuleIcons.plus}</span>
+            <span class="add-option-icon">${ModuleIcons.plus}</span>
             Agregar opción
           </button>
         </div>
@@ -979,7 +1001,7 @@ class SurveysManager {
       <div class="question-option">
         <input type="text" placeholder="Opción ${count}" class="option-text">
         <button type="button" onclick="this.parentElement.remove()" class="btn-danger btn-small">
-          <span style="color: var(--error);">${ModuleIcons.trash}</span>
+          <span class="remove-option-icon">${ModuleIcons.trash}</span>
         </button>
       </div>
     `);
@@ -990,9 +1012,9 @@ class SurveysManager {
     if (!container) return;
     
     if (type === 'text') {
-      container.innerHTML = '<p style="color: var(--text-muted); font-size: 0.85rem; padding: 10px; background: var(--bg-secondary); border-radius: var(--radius); border: 1px solid var(--border);">Respuesta libre</p>';
+      container.innerHTML = '<p class="question-type-info">Respuesta libre</p>';
     } else if (type === 'rating') {
-      container.innerHTML = '<p style="color: var(--text-muted); font-size: 0.85rem; padding: 10px; background: var(--bg-secondary); border-radius: var(--radius); border: 1px solid var(--border);">Calificación 1-5 estrellas</p>';
+      container.innerHTML = '<p class="question-type-info">Calificación 1-5 estrellas</p>';
     } else {
       container.innerHTML = `
         <div class="question-option">
@@ -1002,7 +1024,7 @@ class SurveysManager {
           <input type="text" placeholder="Opción 2" class="option-text">
         </div>
         <button type="button" onclick="SurveysManager.addOption('${id}')" class="btn-outline btn-small">
-          <span style="color: var(--neon-cyan);">${ModuleIcons.plus}</span>
+          <span class="add-option-icon">${ModuleIcons.plus}</span>
           Agregar opción
         </button>
       `;
@@ -1082,7 +1104,201 @@ class SurveysManager {
   }
   
   static participate(id) {
-    Utils.showToast('Funcionalidad próximamente', 'info');
+    // Encontrar la encuesta
+    const survey = allSurveys.find(s => s.id === id);
+    if (!survey) {
+      Utils.showToast('Encuesta no encontrada', 'error');
+      return;
+    }
+    
+    // Navegar a la sección de participación
+    const participationSection = document.getElementById('surveyParticipationSection');
+    if (!participationSection) {
+      Utils.showToast('Sección de participación no disponible', 'error');
+      return;
+    }
+    
+    // Ocultar todas las secciones
+    document.querySelectorAll('.content-section').forEach(section => {
+      section.classList.remove('active');
+    });
+    
+    // Mostrar la sección de participación
+    participationSection.classList.add('active');
+    
+    // Cargar los datos de la encuesta
+    this.loadSurveyForParticipation(survey);
+  }
+  
+  static loadSurveyForParticipation(survey) {
+    // Actualizar información de la encuesta
+    const titleEl = document.getElementById('surveyParticipationTitle');
+    const descEl = document.getElementById('surveyParticipationDesc');
+    const infoTitle = document.getElementById('surveyInfoTitle');
+    const infoDesc = document.getElementById('surveyInfoDescription');
+    const infoAuthor = document.getElementById('surveyInfoAuthor');
+    const infoQuestions = document.getElementById('surveyInfoQuestions');
+    
+    if (titleEl) titleEl.textContent = survey.titulo || 'Encuesta';
+    if (descEl) descEl.textContent = 'Responde las preguntas de la encuesta';
+    if (infoTitle) infoTitle.textContent = survey.titulo || 'Sin título';
+    if (infoDesc) infoDesc.textContent = survey.descripcion || 'Sin descripción';
+    if (infoAuthor) infoAuthor.textContent = `Por: ${survey.autorNombre || 'Anónimo'}`;
+    if (infoQuestions) infoQuestions.textContent = `Preguntas: ${survey.preguntas?.length || 0}`;
+    
+    // Cargar preguntas
+    const questionsContainer = document.getElementById('surveyQuestionsContainer');
+    if (!questionsContainer || !survey.preguntas) return;
+    
+    questionsContainer.innerHTML = survey.preguntas.map((question, index) => {
+      let optionsHtml = '';
+      
+      if (question.tipo === 'multiple') {
+        optionsHtml = question.opciones.map(option => `
+          <label class="survey-option">
+            <input type="radio" name="question-${question.id}" value="${option}">
+            <span class="option-text">${option}</span>
+          </label>
+        `).join('');
+      } else if (question.tipo === 'text') {
+        optionsHtml = `
+          <textarea name="question-${question.id}" class="survey-text-response" placeholder="Escribe tu respuesta..." rows="3"></textarea>
+        `;
+      } else if (question.tipo === 'rating') {
+        optionsHtml = `
+          <div class="rating-options">
+            ${[1, 2, 3, 4, 5].map(num => `
+              <label class="rating-option">
+                <input type="radio" name="question-${question.id}" value="${num}">
+                <span class="rating-star">⭐</span>
+                <span class="rating-number">${num}</span>
+              </label>
+            `).join('')}
+          </div>
+        `;
+      }
+      
+      return `
+        <div class="survey-question-card" data-question-id="${question.id}">
+          <div class="question-header">
+            <span class="question-number">${index + 1}</span>
+            <h4 class="question-text">${question.texto}</h4>
+          </div>
+          <div class="question-options">
+            ${optionsHtml}
+          </div>
+        </div>
+      `;
+    }).join('');
+    
+    // Configurar botón de volver
+    const backBtn = document.getElementById('backToSurveysBtn');
+    if (backBtn) {
+      backBtn.onclick = () => {
+        // Volver a la sección de encuestas
+        document.querySelectorAll('.content-section').forEach(section => {
+          section.classList.remove('active');
+        });
+        document.getElementById('surveysSection').classList.add('active');
+        
+        // Actualizar navegación
+        document.querySelectorAll('.nav-item').forEach(nav => {
+          nav.classList.remove('active');
+        });
+        document.querySelector('[data-section="surveys"]').classList.add('active');
+      };
+    }
+    
+    // Configurar formulario de participación
+    const form = document.getElementById('surveyParticipationForm');
+    if (form) {
+      form.onsubmit = (e) => {
+        e.preventDefault();
+        this.submitSurveyResponse(survey);
+      };
+    }
+    
+    // Configurar botón de cancelar
+    const cancelBtn = document.getElementById('cancelParticipation');
+    if (cancelBtn) {
+      cancelBtn.onclick = () => {
+        document.getElementById('backToSurveysBtn').click();
+      };
+    }
+  }
+  
+  static async submitSurveyResponse(survey) {
+    try {
+      const user = getCurrentUser();
+      if (!user) {
+        Utils.showToast('Debes iniciar sesión para participar', 'error');
+        return;
+      }
+      
+      // Recopilar respuestas
+      const responses = {};
+      let allAnswered = true;
+      
+      survey.preguntas.forEach(question => {
+        const inputs = document.querySelectorAll(`[name="question-${question.id}"]`);
+        let value = null;
+        
+        if (question.tipo === 'multiple' || question.tipo === 'rating') {
+          const checked = document.querySelector(`[name="question-${question.id}"]:checked`);
+          if (checked) {
+            value = checked.value;
+          } else {
+            allAnswered = false;
+          }
+        } else if (question.tipo === 'text') {
+          const textarea = document.querySelector(`[name="question-${question.id}"]`);
+          if (textarea && textarea.value.trim()) {
+            value = textarea.value.trim();
+          } else {
+            allAnswered = false;
+          }
+        }
+        
+        responses[question.id] = value;
+      });
+      
+      if (!allAnswered) {
+        Utils.showToast('Por favor responde todas las preguntas', 'warning');
+        return;
+      }
+      
+      Utils.showToast('Enviando respuestas...', 'info');
+      
+      // Guardar respuesta
+      const responseData = {
+        encuestaId: survey.id,
+        encuestaTitulo: survey.titulo,
+        respuestas: responses,
+        timestamp: serverTimestamp(),
+        participanteId: user.uid,
+        participanteNombre: user.displayName,
+        participanteEmail: user.email
+      };
+      
+      await addDoc(collection(db, 'respuestas_encuestas'), responseData);
+      
+      // Actualizar contador de respuestas
+      const surveyRef = doc(db, 'encuestas', survey.id);
+      await updateDoc(surveyRef, {
+        respuestas: increment(1)
+      });
+      
+      Utils.showToast('¡Respuesta enviada exitosamente!', 'success');
+      
+      // Volver a la lista de encuestas
+      setTimeout(() => {
+        document.getElementById('backToSurveysBtn').click();
+      }, 1500);
+      
+    } catch (e) {
+      console.error('Error al enviar respuesta:', e);
+      Utils.showToast('Error al enviar respuesta', 'error');
+    }
   }
   
   static deleteSurvey(id, title) {
@@ -1102,7 +1318,7 @@ class SurveysManager {
   }
 }
 
-// Opinions Manager modernizado
+// Opinions Manager optimizado
 class OpinionsManager {
   static async loadOpinions(updateUI = true) {
     try {
@@ -1147,13 +1363,11 @@ class OpinionsManager {
     if (!opinions?.length) {
       list.innerHTML = `
         <div class="empty-state">
-          <div class="empty-icon" style="color: var(--neon-cyan);">
-            ${ModuleIcons.comment}
-          </div>
+          <div class="empty-icon">${ModuleIcons.comment}</div>
           <h3>No hay opiniones</h3>
           <p>¡Comparte tu primera opinión!</p>
           <button class="btn-primary" onclick="OpinionsManager.showOpinionForm()">
-            <span style="color: var(--neon-cyan);">${ModuleIcons.plus}</span>
+            <span class="btn-icon">${ModuleIcons.plus}</span>
             <span class="btn-text">Escribir Primera Opinión</span>
           </button>
         </div>
@@ -1177,23 +1391,23 @@ class OpinionsManager {
             
             <div class="opinion-meta">
               <div class="opinion-author">
-                <span style="color: var(--neon-cyan);">${ModuleIcons.user}</span>
+                <span class="opinion-author-icon">${ModuleIcons.user}</span>
                 ${opinion.autorNombre}
               </div>
               <div class="opinion-date">
-                <span style="color: var(--neon-pink);">${ModuleIcons.clock}</span>
+                <span class="opinion-date-icon">${ModuleIcons.clock}</span>
                 ${Utils.formatDate(opinion.timestamp)}
               </div>
             </div>
             
             <div class="opinion-category">
-              <span style="color: var(--neon-cyan);">${ModuleIcons.comment}</span>
+              <span class="opinion-category-icon">${ModuleIcons.comment}</span>
               ${this.getCategoryName(opinion.categoria)}
             </div>
             
             ${isMine ? `
               <button class="resource-menu-btn" onclick="OpinionsManager.deleteOpinion('${opinion.id}', '${(opinion.titulo || '').replace(/'/g, "\\'")}')">
-                <span style="color: var(--error);">${ModuleIcons.trash}</span>
+                <span class="opinion-delete-icon">${ModuleIcons.trash}</span>
               </button>
             ` : ''}
           </div>
@@ -1203,24 +1417,24 @@ class OpinionsManager {
           
           ${opinion.materia ? `
             <div class="opinion-subject">
-              <span style="color: var(--neon-cyan);">${ModuleIcons.book}</span>
+              <span class="opinion-subject-icon">${ModuleIcons.book}</span>
               ${opinion.materia}
             </div>
           ` : ''}
           
           <div class="opinion-actions">
             <button class="opinion-action ${isLiked ? 'liked' : ''}" onclick="OpinionsManager.toggleLike('${opinion.id}')">
-              <span style="color: ${isLiked ? 'var(--error)' : 'var(--neon-pink)'};">
+              <span class="like-icon">
                 ${isLiked ? ModuleIcons.heartFilled : ModuleIcons.heart}
               </span>
               <span>${likes}</span>
             </button>
             <button class="opinion-action">
-              <span style="color: var(--neon-cyan);">${ModuleIcons.comment}</span>
+              <span class="comment-icon">${ModuleIcons.comment}</span>
               <span>Comentar</span>
             </button>
             <button class="opinion-action">
-              <span style="color: var(--neon-pink);">${ModuleIcons.share}</span>
+              <span class="share-icon">${ModuleIcons.share}</span>
               <span>Compartir</span>
             </button>
           </div>
@@ -1413,9 +1627,7 @@ class ProfileManager {
     if (!sorted.length) {
       container.innerHTML = `
         <div class="activity-placeholder">
-          <div class="placeholder-icon" style="color: var(--neon-cyan);">
-            ${ModuleIcons.activity}
-          </div>
+          <div class="placeholder-icon">${ModuleIcons.activity}</div>
           <p>No tienes actividad reciente</p>
         </div>
       `;
@@ -1436,14 +1648,12 @@ class ProfileManager {
       
       return `
         <div class="timeline-item">
-          <div class="timeline-icon" style="color: var(--neon-cyan);">
-            ${icon}
-          </div>
+          <div class="timeline-icon">${icon}</div>
           <div class="timeline-content">
             <h5>${action}</h5>
             <p>${Utils.truncate(activity.titulo, 50)}</p>
             <div class="timeline-date">
-              <span style="color: var(--neon-pink);">${ModuleIcons.clock}</span>
+              <span class="timeline-date-icon">${ModuleIcons.clock}</span>
               ${Utils.formatDate(activity.timestamp)}
             </div>
           </div>
@@ -1518,7 +1728,6 @@ function navigateToSection(sectionName) {
     activeButton.classList.add('active');
   }
   
-  // Cargar contenido específico
   switch (sectionName) {
     case 'dashboard':
       DashboardManager.loadDashboard();
@@ -1539,7 +1748,6 @@ function navigateToSection(sectionName) {
 }
 
 function setupEventListeners() {
-  // Navegación principal
   const navButtons = document.querySelectorAll('.nav-item');
   navButtons.forEach(button => {
     button.addEventListener('click', (e) => {
@@ -1551,7 +1759,6 @@ function setupEventListeners() {
     });
   });
   
-  // Botones principales
   const buttonMappings = [
     { id: 'addResourceBtn', action: () => ResourcesManager.openUploadModal(), requireAuth: true },
     { id: 'addSurveyBtn', action: () => SurveysManager.openSurveyModal(), requireAuth: true },
@@ -1712,7 +1919,7 @@ window.OpinionsManager = OpinionsManager;
 window.ProfileManager = ProfileManager;
 window.navigateToSection = navigateToSection;
 
-// Inicialización
+// Inicialización optimizada
 if (document.readyState === 'loading') {
   document.addEventListener('DOMContentLoaded', () => {
     setupEventListeners();
@@ -1722,5 +1929,3 @@ if (document.readyState === 'loading') {
   setupEventListeners();
   setTimeout(initUploadcare, 2000);
 }
-
-console.log('EstudiaFácil Modules v3.0 - Optimizado y modernizado');

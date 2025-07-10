@@ -1,64 +1,49 @@
-// ===== NAVEGACIÓN MODERNA - FUNCIONALIDAD =====
-// Actualizado: 2025-07-09 19:05:57 UTC - EiderMontalvo
-
 document.addEventListener('DOMContentLoaded', function() {
   initModernNavigation();
 });
 
 function initModernNavigation() {
-  // Elementos de navegación
   const desktopNavItems = document.querySelectorAll('.nav-item');
   const mobileNavItems = document.querySelectorAll('.mobile-nav-item');
   const contentSections = document.querySelectorAll('.content-section');
   
-  // Función para cambiar sección activa
   function setActiveSection(sectionId) {
-    // Remover clase active de todas las secciones
     contentSections.forEach(section => {
       section.classList.remove('active');
     });
     
-    // Remover clase active de todos los nav items
     [...desktopNavItems, ...mobileNavItems].forEach(item => {
       item.classList.remove('active');
     });
     
-    // Activar la sección seleccionada
     const targetSection = document.getElementById(sectionId + 'Section');
     if (targetSection) {
       targetSection.classList.add('active');
     }
     
-    // Activar el nav item correspondiente (desktop y mobile)
     const activeDesktopItem = document.querySelector(`.nav-item[data-section="${sectionId}"]`);
     const activeMobileItem = document.querySelector(`.mobile-nav-item[data-section="${sectionId}"]`);
     
     if (activeDesktopItem) activeDesktopItem.classList.add('active');
     if (activeMobileItem) activeMobileItem.classList.add('active');
     
-    // Efecto de vibración en mobile (si está disponible)
     if (navigator.vibrate && window.innerWidth <= 767) {
-      navigator.vibrate(50);
+      navigator.vibrate(30);
     }
     
-    // Guardar estado en localStorage
     localStorage.setItem('activeSection', sectionId);
   }
   
-  // Event listeners para navegación desktop
   desktopNavItems.forEach(item => {
     item.addEventListener('click', function() {
       const sectionId = this.dataset.section;
       setActiveSection(sectionId);
-      
-      // Efecto de onda
       createRippleEffect(this);
     });
     
-    // Efecto hover mejorado
     item.addEventListener('mouseenter', function() {
       if (!this.classList.contains('active')) {
-        this.style.transform = 'translateY(-6px) scale(1.05)';
+        this.style.transform = 'translateY(-4px) scale(1.02)';
       }
     });
     
@@ -69,52 +54,46 @@ function initModernNavigation() {
     });
   });
   
-  // Event listeners para navegación mobile
   mobileNavItems.forEach(item => {
     item.addEventListener('click', function() {
       const sectionId = this.dataset.section;
       setActiveSection(sectionId);
-      
-      // Efecto de pulso
       createPulseEffect(this);
     });
     
-    // Mejorar feedback táctil
     item.addEventListener('touchstart', function() {
-      this.style.transform = 'scale(0.9)';
+      this.style.transform = 'scale(0.95)';
     });
     
     item.addEventListener('touchend', function() {
       setTimeout(() => {
         this.style.transform = '';
-      }, 150);
+      }, 120);
     });
   });
   
-  // Restaurar sección activa desde localStorage
   const savedSection = localStorage.getItem('activeSection');
   if (savedSection) {
     setActiveSection(savedSection);
   } else {
-    setActiveSection('dashboard'); // Sección por defecto
+    setActiveSection('dashboard');
   }
   
-  // Función para crear efecto de onda
   function createRippleEffect(element) {
     const ripple = document.createElement('div');
     ripple.className = 'nav-ripple';
     ripple.style.cssText = `
       position: absolute;
       border-radius: 50%;
-      background: rgba(0, 212, 255, 0.6);
+      background: rgba(0, 245, 255, 0.4);
       transform: scale(0);
-      animation: ripple 0.6s linear;
+      animation: navRipple 0.5s ease-out;
       left: 50%;
       top: 50%;
-      width: 20px;
-      height: 20px;
-      margin-left: -10px;
-      margin-top: -10px;
+      width: 16px;
+      height: 16px;
+      margin-left: -8px;
+      margin-top: -8px;
       pointer-events: none;
     `;
     
@@ -123,19 +102,18 @@ function initModernNavigation() {
     
     setTimeout(() => {
       ripple.remove();
-    }, 600);
+    }, 500);
   }
   
-  // Función para crear efecto de pulso
   function createPulseEffect(element) {
     const pulse = document.createElement('div');
     pulse.className = 'nav-pulse';
     pulse.style.cssText = `
       position: absolute;
       inset: 0;
-      border-radius: 16px;
-      background: rgba(0, 212, 255, 0.3);
-      animation: pulse 0.4s ease-out;
+      border-radius: 12px;
+      background: rgba(0, 245, 255, 0.2);
+      animation: navPulse 0.3s ease-out;
       pointer-events: none;
     `;
     
@@ -144,37 +122,43 @@ function initModernNavigation() {
     
     setTimeout(() => {
       pulse.remove();
-    }, 400);
+    }, 300);
   }
 }
 
-// CSS para animaciones dinámicas
-const dynamicStyles = `
-  @keyframes ripple {
+// CSS para animaciones
+const navStyles = `
+  @keyframes navRipple {
     to {
-      transform: scale(4);
+      transform: scale(3);
       opacity: 0;
     }
   }
   
-  @keyframes pulse {
+  @keyframes navPulse {
     0% {
       transform: scale(1);
-      opacity: 0.6;
+      opacity: 0.5;
     }
     100% {
-      transform: scale(1.2);
+      transform: scale(1.1);
       opacity: 0;
     }
   }
+  
+  .nav-item {
+    transition: transform 0.2s ease;
+  }
+  
+  .mobile-nav-item {
+    transition: transform 0.15s ease;
+  }
 `;
 
-// Agregar estilos dinámicos
 const styleSheet = document.createElement('style');
-styleSheet.textContent = dynamicStyles;
+styleSheet.textContent = navStyles;
 document.head.appendChild(styleSheet);
 
-// Función global para cambiar sección (para usar desde otros scripts)
 window.setActiveSection = function(sectionId) {
   const event = new CustomEvent('navigationChange', { detail: { sectionId } });
   document.dispatchEvent(event);
