@@ -206,7 +206,32 @@ class ResourcesManager {
     const modal = document.getElementById('uploadModal');
     if (modal) {
       modal.style.display = 'flex'; document.body.style.overflow = 'hidden';
-      setTimeout(() => { const titleInput = document.getElementById('titulo'); if (titleInput) titleInput.focus(); }, 100);
+      setTimeout(() => {
+        const titleInput = document.getElementById('titulo');
+        if (titleInput) titleInput.focus();
+        // Limitar categorías a 'libros' y 'apuntes'
+        const catInput = document.getElementById('categoria');
+        if (catInput) {
+          catInput.innerHTML = '<option value="libros">Libros</option><option value="apuntes">Apuntes</option>';
+        }
+        // Limitar materias a las definidas y asegurar que sea un <select>
+        const materias = ['etp','matematicas','comunicacion','cyt','ciencias sociales','arte','religion','ingles','fisica','dpcc'];
+        let materiaInput = document.getElementById('materia');
+        if (materiaInput) {
+          // Si no es un <select>, reemplazarlo
+          if (materiaInput.tagName.toLowerCase() !== 'select') {
+            const select = document.createElement('select');
+            select.id = 'materia';
+            select.name = 'materia';
+            select.className = 'enhanced-select'; // mismo estilo que categorías
+            materiaInput.parentNode.replaceChild(select, materiaInput);
+            materiaInput = select;
+          } else {
+            materiaInput.className = 'enhanced-select'; // asegurar el estilo
+          }
+          materiaInput.innerHTML = materias.map(m => `<option value="${m}">${m.charAt(0).toUpperCase() + m.slice(1)}</option>`).join('');
+        }
+      }, 100);
     }
   }
   
@@ -250,25 +275,29 @@ class ResourcesManager {
   
   static async loadResources(updateUI = true) {
     try {
-      let snap;
-      try {
-        snap = await getDocs(query(collection(db, 'recursos'), orderBy('timestamp', 'desc')));
-      } catch {
-        snap = await getDocs(collection(db, 'recursos'));
-      }
+      // Consulta SIN orderBy para descartar problemas de ordenamiento
+      const snap = await getDocs(collection(db, 'recursos'));
       const resources = [];
-      snap.forEach(d => { resources.push({ id: d.id, ...d.data() }); });
+      snap.forEach(d => {
+        let data = { id: d.id, ...d.data() };
+        // Si no tiene timestamp pero sí fechaCreacion, normalizar
+        if (!data.timestamp && data.fechaCreacion) {
+          try {
+            const fecha = new Date(Date.parse(data.fechaCreacion.replace(/\u202f|\u200e/g, '')));
+            if (!isNaN(fecha.getTime())) data.timestamp = fecha;
+          } catch {}
+        }
+        resources.push(data);
+      });
       // Cargar PDFs del JSON estático y combinarlos
       let pdfs = [];
       try {
         const response = await fetch('recursos/recursos.json');
         if (response.ok) {
           pdfs = await response.json();
-          // Normalizar los datos de los PDFs para que coincidan con el formato de recursos
           pdfs = pdfs.map(pdf => ({
             ...pdf,
-            id: 'pdf-' + (pdf.id || pdf.titulo || Math.random().toString(36).substr(2)),
-            // Solo usar 'archivo', ya no existe 'url'
+            id: 'pdf-' + (pdf.titulo || Math.random().toString(36).substr(2)),
             archivo: pdf.archivo,
             categoria: pdf.categoria || 'otros',
             autorNombre: pdf.autorNombre || 'Recursos PDF',
@@ -277,7 +306,6 @@ class ResourcesManager {
           }));
         }
       } catch (e) {
-        // Si falla la carga del JSON, solo mostrar los recursos de Firebase
         pdfs = [];
       }
       // Unir ambos arrays y ordenar por fecha si es posible
@@ -327,13 +355,10 @@ class ResourcesManager {
   
   // getCategoryName y getLevelName solo aquí, no duplicar en otros managers.
   static getCategoryName(cat) {
-    // Personaliza los nombres de categorías de recursos según tus necesidades
+    // Solo permitir 'libros' y 'apuntes'
     const categories = {
       apuntes: 'Apuntes',
-      examenes: 'Exámenes',
-      proyectos: 'Proyectos',
-      libros: 'Libros',
-      otros: 'Otros'
+      libros: 'Libros'
     };
     return categories[cat] || cat || 'Sin categoría';
   }
@@ -1114,7 +1139,7 @@ class OpinionsManager {
       const isMine = user && opinion.autorId === user.uid;
       const likes = opinion.likes || 0; const isLiked = opinion.likedBy && user && opinion.likedBy.includes(user.uid);
       
-      return `<div class="opinion-card"><div class="opinion-header"><img src="${opinion.autorAvatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(opinion.autorNombre || 'Usuario')}&background=00f5ff&color=fff&size=80`}" alt="${opinion.autorNombre}" class="opinion-avatar"><div class="opinion-meta"><div class="opinion-author"><span class="opinion-author-icon">${ModuleIcons.user}</span>${opinion.autorNombre}</div><div class="opinion-date"><span class="opinion-date-icon">${ModuleIcons.clock}</span>${Utils.formatDate(opinion.timestamp)}</div></div><div class="opinion-category"><span class="opinion-category-icon">${ModuleIcons.comment}</span>${this.getCategoryName(opinion.categoria)}</div>${isMine ? `<button class="resource-menu-btn" onclick="OpinionsManager.deleteOpinion('${opinion.id}', '${(opinion.titulo || '').replace(/'/g, "\\'")}')"><span class="opinion-delete-icon">${ModuleIcons.trash}</span></button>` : ''}</div><h3 class="opinion-title">${opinion.titulo}</h3><p class="opinion-content">${opinion.contenido}</p>${opinion.materia ? `<div class="opinion-subject"><span class="opinion-subject-icon">${ModuleIcons.book}</span>${opinion.materia}</div>` : ''}<div class="opinion-actions"><button class="opinion-action ${isLiked ? 'liked' : ''}" onclick="OpinionsManager.toggleLike('${opinion.id}')"><span class="like-icon">${isLiked ? ModuleIcons.heartFilled : ModuleIcons.heart}</span><span>${likes}</span></button><button class="opinion-action"><span class="comment-icon">${ModuleIcons.comment}</span><span>Comentar</span></button><button class="opinion-action"><span class="share-icon">${ModuleIcons.share}</span><span>Compartir</span></button></div></div>`;
+      return `<div class="opinion-card"><div class="opinion-header"><img src="${opinion.autorAvatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(opinion.autorNombre || 'Usuario')}&background=00f5ff&color=fff&size=80`}" alt="${opinion.autorNombre}" class="opinion-avatar"><div class="opinion-meta"><div class="opinion-author"><span class="opinion-author-icon">${ModuleIcons.user}</span>${opinion.autorNombre}</div><div class="opinion-date"><span class="opinion-date-icon">${ModuleIcons.clock}</span>${Utils.formatDate(opinion.timestamp)}</div></div><div class="opinion-category"><span class="opinion-category-icon">${ModuleIcons.comment}</span>${this.getCategoryName(opinion.categoria)}</div>${isMine ? `<button class="resource-menu-btn" onclick="OpinionsManager.deleteOpinion('${opinion.id}', '${(opinion.titulo || '').replace(/'/g, "\\'")}")"><span class="opinion-delete-icon">${ModuleIcons.trash}</span></button>` : ''}</div><h3 class="opinion-title">${opinion.titulo}</h3><p class="opinion-content">${opinion.contenido}</p>${opinion.materia ? `<div class="opinion-subject"><span class="opinion-subject-icon">${ModuleIcons.book}</span>${opinion.materia}</div>` : ''}<div class="opinion-actions"><button class="opinion-action ${isLiked ? 'liked' : ''}" onclick="OpinionsManager.toggleLike('${opinion.id}')"><span class="like-icon">${isLiked ? ModuleIcons.heartFilled : ModuleIcons.heart}</span><span>${likes}</span></button></div></div>`;
     }).join('');
   }
   
@@ -1242,7 +1267,7 @@ function setupEventListeners() {
     button.addEventListener('click', (e) => { e.preventDefault(); const section = button.getAttribute('data-section'); if (section) navigateToSection(section); });
   });
   
-  [{ id: 'addResourceBtn', action: () => ResourcesManager.openUploadModal(), requireAuth: true }, { id: 'addSurveyBtn', action: () => SurveysManager.openSurveyModal(), requireAuth: true }, { id: 'addOpinionBtn', action: () => OpinionsManager.showOpinionForm(), requireAuth: true }, { id: 'myResourcesBtn', action: () => ResourcesManager.showMyResources(), requireAuth: true }].forEach(({ id, action, requireAuth }) => {
+  [{ id: 'addResourceBtn', action: () => ResourcesManager.openUploadModal(), requireAuth: true }, { id: 'addSurveyBtn', action: () => SurveysManager.openSurveyModal(), requireAuth: true }, { id: 'addOpinionBtn', action: () => OpinionsManager.showOpinionForm(), requireAuth: true }].forEach(({ id, action, requireAuth }) => {
     const button = document.getElementById(id);
     if (button) {
       button.addEventListener('click', (e) => {
@@ -1290,10 +1315,16 @@ function setupEventListeners() {
   }
   
   const filterCategoria = document.getElementById('filterCategoria');
-  if (filterCategoria) filterCategoria.addEventListener('change', () => { ResourcesManager.filterResources(); });
-  
+  if (filterCategoria) {
+    // Solo dejar 'Libros' y 'Apuntes'
+    filterCategoria.innerHTML = '<option value="libros">Libros</option><option value="apuntes">Apuntes</option>';
+    filterCategoria.addEventListener('change', () => { ResourcesManager.filterResources(); });
+  }
+  // Eliminar el filtro de nivel y dejar solo secundaria como texto fijo
   const filterNivel = document.getElementById('filterNivel');
-  if (filterNivel) filterNivel.addEventListener('change', () => { ResourcesManager.filterResources(); });
+  if (filterNivel) {
+    filterNivel.parentElement.innerHTML = '<span class="nivel-fijo">Secundaria</span>';
+  }
   
   [{ id: 'closeUploadModal', action: () => ResourcesManager.closeUploadModal() }, { id: 'cancelUpload', action: () => ResourcesManager.closeUploadModal() }, { id: 'closeSurveyModal', action: () => SurveysManager.closeSurveyModal() }, { id: 'cancelSurvey', action: () => SurveysManager.closeSurveyModal() }, { id: 'cancelOpinion', action: () => OpinionsManager.hideOpinionForm() }, { id: 'cancelOpinionBtn', action: () => OpinionsManager.hideOpinionForm() }].forEach(({ id, action }) => {
     const button = document.getElementById(id); if (button) button.addEventListener('click', action);
