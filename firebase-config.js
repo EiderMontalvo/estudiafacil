@@ -1,36 +1,18 @@
 // firebase-config.js - Versión corregida con exportaciones completas
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
-import { 
-  getAuth, 
-  GoogleAuthProvider,
-  signInWithPopup,
-  signInWithRedirect,
-  getRedirectResult,
-  signOut as firebaseSignOut,
-  onAuthStateChanged,
-  setPersistence,
-  browserLocalPersistence // ✅ IMPORTAR ESTA FUNCIÓN
-} from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
+import * as authModule from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
+import * as firestoreModule from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
 
-import {
-  getFirestore,
-  collection,
-  addDoc,
-  getDocs,
-  deleteDoc,
-  doc,
-  orderBy,
-  query,
-  where,
-  serverTimestamp,
-  updateDoc,
-  increment,
-  setDoc,
-  getDoc,
-  enableNetwork,
-  disableNetwork,
-  terminate
-} from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
+// Acceso rápido a funciones necesarias
+const {
+  getAuth, GoogleAuthProvider, signInWithPopup, signInWithRedirect, getRedirectResult,
+  signOut: firebaseSignOut, onAuthStateChanged, setPersistence, browserLocalPersistence
+} = authModule;
+
+const {
+  getFirestore, collection, addDoc, getDocs, deleteDoc, doc, orderBy, query, where,
+  serverTimestamp, updateDoc, increment, setDoc, getDoc, enableNetwork, disableNetwork, terminate
+} = firestoreModule;
 
 // Configuración de Firebase
 const firebaseConfig = {
@@ -216,14 +198,6 @@ window.addEventListener('beforeunload', () => {
 });
 
 // Exportaciones globales
-Object.assign(window, {
-  signInWithGoogle, signOut, getCurrentUser, isUserLoggedIn, auth, db,
-  checkFirestoreConnection, reconnectFirestore, collection, addDoc, getDocs,
-  deleteDoc, doc, orderBy, query, where, serverTimestamp, updateDoc,
-  increment, setDoc, getDoc
-});
-
-// ✅ EXPORTACIONES ES6 COMPLETAS - INCLUIR browserLocalPersistence
 export {
   auth,
   db,
@@ -239,7 +213,7 @@ export {
   getRedirectResult,
   onAuthStateChanged,
   setPersistence,
-  browserLocalPersistence, // ✅ EXPORTAR ESTA FUNCIÓN
+  browserLocalPersistence,
   collection,
   addDoc,
   getDocs,
@@ -256,23 +230,3 @@ export {
   enableNetwork,
   disableNetwork
 };
-
-// Objetos de compatibilidad
-window.EstudiaFacilAuth = window.EstudiaFacilCore = {
-  signInWithGoogle,
-  signOut,
-  getCurrentUser,
-  isUserLoggedIn,
-  checkFirestoreConnection,
-  reconnectFirestore,
-  showToast: (message, type) => {
-    if (window.Utils?.showToast) {
-      window.Utils.showToast(message, type);
-    }
-  }
-};
-
-// Log de confirmación silencioso
-if (isInitialized) {
-  console.log('Firebase ready');
-}
