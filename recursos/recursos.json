@@ -1,0 +1,46 @@
+[
+  {
+    "titulo": "Matemáticas",
+    "archivo": "recursos/Matemática5.pdf",
+    "descripcion": "fichas de matematicas",
+    "materia": "Matemáticas",
+    "categoria": "libros",
+    "nivel": "secundaria",
+    "autorNombre": "Recursos PDF",
+    "autorId": "pdf-static",
+    "timestamp": "2025-07-01T10:00:00Z"
+  },
+  {
+    "titulo": "Lenguaje",
+    "archivo": "recursos/lenguaje5.pdf",
+    "descripcion": "ficha de lenguaje",
+    "materia": "Lenguaje",
+    "categoria": "libros",
+    "nivel": "secundaria",
+    "autorNombre": "Recursos PDF",
+    "autorId": "pdf-static",
+    "timestamp": "2025-07-02T10:00:00Z"
+  },
+  {
+    "titulo": "Historia",
+    "archivo": "recursos/historia5.pdf",
+    "descripcion": "ficha de historia.",
+    "materia": "Historia",
+    "categoria": "libros",
+    "nivel": "secundaria",
+    "autorNombre": "Recursos PDF",
+    "autorId": "pdf-static",
+    "timestamp": "2025-07-03T10:00:00Z"
+  },
+  {
+    "titulo": "Fisica",
+    "archivo": "recursos/Fisica5.pdf",
+    "descripcion": "ficha de fisica.",
+    "materia": "Fisica",
+    "categoria": "libros",
+    "nivel": "secundaria",
+    "autorNombre": "Recursos PDF",
+    "autorId": "pdf-static",
+    "timestamp": "2025-07-04T10:00:00Z"
+  }
+]

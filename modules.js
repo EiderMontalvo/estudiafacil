@@ -248,7 +248,7 @@ class ResourcesManager {
     } catch (e) { console.error('Error al guardar recurso:', e); Utils.showToast('Error al guardar recurso', 'error'); }
   }
   
-    static async loadResources(updateUI = true) {
+  static async loadResources(updateUI = true) {
     try {
       let snap;
       try {
@@ -256,18 +256,39 @@ class ResourcesManager {
       } catch {
         snap = await getDocs(collection(db, 'recursos'));
       }
-      
       const resources = [];
       snap.forEach(d => { resources.push({ id: d.id, ...d.data() }); });
-      
-      resources.sort((a, b) => {
+      // Cargar PDFs del JSON estático y combinarlos
+      let pdfs = [];
+      try {
+        const response = await fetch('recursos/recursos.json');
+        if (response.ok) {
+          pdfs = await response.json();
+          // Normalizar los datos de los PDFs para que coincidan con el formato de recursos
+          pdfs = pdfs.map(pdf => ({
+            ...pdf,
+            id: 'pdf-' + (pdf.id || pdf.titulo || Math.random().toString(36).substr(2)),
+            // Solo usar 'archivo', ya no existe 'url'
+            archivo: pdf.archivo,
+            categoria: pdf.categoria || 'otros',
+            autorNombre: pdf.autorNombre || 'Recursos PDF',
+            timestamp: pdf.timestamp || null,
+            esPDF: true
+          }));
+        }
+      } catch (e) {
+        // Si falla la carga del JSON, solo mostrar los recursos de Firebase
+        pdfs = [];
+      }
+      // Unir ambos arrays y ordenar por fecha si es posible
+      const all = [...resources, ...pdfs];
+      all.sort((a, b) => {
         const dateA = a.timestamp ? (a.timestamp.toDate ? a.timestamp.toDate() : new Date(a.timestamp)) : new Date(0);
         const dateB = b.timestamp ? (b.timestamp.toDate ? b.timestamp.toDate() : new Date(b.timestamp)) : new Date(0);
         return dateB - dateA;
       });
-      
-      allResources = resources;
-      if (updateUI) this.displayResources(resources);
+      allResources = all;
+      if (updateUI) this.displayResources(all);
     } catch (e) { console.error('Error al cargar recursos:', e); Utils.showToast('Error al cargar recursos', 'error'); }
   }
   
@@ -304,14 +325,29 @@ class ResourcesManager {
     }).join('');
   }
   
+  // getCategoryName y getLevelName solo aquí, no duplicar en otros managers.
   static getCategoryName(cat) {
-    const names = { apuntes: 'Apuntes', examenes: 'Exámenes', proyectos: 'Proyectos', libros: 'Libros', otros: 'Otros' };
-    return names[cat] || 'Sin categoría';
+    // Personaliza los nombres de categorías de recursos según tus necesidades
+    const categories = {
+      apuntes: 'Apuntes',
+      examenes: 'Exámenes',
+      proyectos: 'Proyectos',
+      libros: 'Libros',
+      otros: 'Otros'
+    };
+    return categories[cat] || cat || 'Sin categoría';
   }
-  
+
   static getLevelName(level) {
-    const levels = { primaria: 'Primaria', secundaria: 'Secundaria', universidad: 'Universidad' };
-    return levels[level] || level;
+    // Personaliza los nombres de niveles según tus necesidades
+    const levels = {
+      primaria: 'Primaria',
+      secundaria: 'Secundaria',
+      preparatoria: 'Preparatoria',
+      universidad: 'Universidad',
+      otro: 'Otro'
+    };
+    return levels[level] || level || 'Sin nivel';
   }
   
   static filterResources() {
@@ -319,15 +355,15 @@ class ResourcesManager {
     const cat = document.getElementById('filterCategoria')?.value || '';
     const level = document.getElementById('filterNivel')?.value || '';
     let filtered = allResources;
-    
     if (search) {
       filtered = filtered.filter(resource => {
+        // Asegurar que los campos existen y son string
         const searchFields = [resource.titulo, resource.materia, resource.descripcion, resource.autorNombre];
-        return searchFields.some(field => (field || '').toLowerCase().includes(search));
+        return searchFields.some(field => (field || '').toString().toLowerCase().includes(search));
       });
     }
-    if (cat) filtered = filtered.filter(resource => resource.categoria === cat);
-    if (level) filtered = filtered.filter(resource => resource.nivel === level);
+    if (cat) filtered = filtered.filter(resource => (resource.categoria || '').toString() === cat);
+    if (level) filtered = filtered.filter(resource => (resource.nivel || '').toString() === level);
     this.displayResources(filtered);
   }
   
@@ -362,9 +398,31 @@ class SurveysManager {
   static openSurveyModal() {
     const modal = document.getElementById('surveyModal');
     if (modal) {
-      modal.style.display = 'flex'; document.body.style.overflow = 'hidden';
-      this.clearQuestions(); this.addQuestion();
-      setTimeout(() => { const titleInput = document.getElementById('surveyTitle'); if (titleInput) titleInput.focus(); }, 100);
+      modal.style.display = 'flex';
+      document.body.style.overflow = 'hidden';
+      this.clearQuestions();
+      // UI simplificada: solo una pregunta por defecto, menos texto, más directo
+      this.addQuestion();
+      // Simplificar títulos y placeholders
+      const titleInput = document.getElementById('surveyTitle');
+      if (titleInput) {
+        titleInput.placeholder = 'Título claro de la encuesta (ej: ¿Qué materia te gusta más?)';
+        titleInput.focus();
+      }
+      const descInput = document.getElementById('surveyDescription');
+      if (descInput) descInput.placeholder = 'Descripción breve (opcional)';
+      const catInput = document.getElementById('surveyCategory');
+      if (catInput) catInput.title = 'Selecciona una categoría';
+      // Ocultar textos de ayuda extensos
+      document.querySelectorAll('.form-hint, .options-description, .question-settings, .btn-help').forEach(el => { if (el) el.style.display = 'none'; });
+      // Dejar solo lo esencial visible
+      document.querySelectorAll('.options-header').forEach(el => { if (el) el.style.display = 'none'; });
+      // Ocultar encabezado de preguntas y botón de agregar si ya hay 1 pregunta
+      const addBtn = document.getElementById('addQuestionBtn');
+      if (addBtn) addBtn.querySelector('.btn-text').textContent = 'Agregar otra pregunta';
+      const questionsList = document.getElementById('questionsList');
+      if (questionsList && questionsList.children.length === 1 && addBtn) addBtn.style.display = 'none';
+      else if (addBtn) addBtn.style.display = '';
     }
   }
   
@@ -429,9 +487,17 @@ class SurveysManager {
     }).join('');
   }
   
+  // getCategoryName solo aquí, no duplicar en otros managers.
   static getCategoryName(cat) {
-    const categories = { estudio: 'Métodos de Estudio', materias: 'Materias', tecnologia: 'Tecnología', general: 'General' };
-    return categories[cat] || 'General';
+    // Puedes personalizar los nombres de categorías según tus necesidades
+    const categories = {
+      general: 'General',
+      satisfaccion: 'Satisfacción',
+      sugerencias: 'Sugerencias',
+      experiencia: 'Experiencia',
+      otro: 'Otro'
+    };
+    return categories[cat] || cat || 'Sin categoría';
   }
   
   // MÉTODO MEJORADO addQuestion
@@ -748,12 +814,7 @@ class SurveysManager {
     if (question) { question.remove(); this.updateNumbers(); }
   }
   
-  static updateNumbers() {
-    document.querySelectorAll('.question-item').forEach((question, index) => {
-      const numberEl = question.querySelector('.question-number');
-      if (numberEl) numberEl.textContent = index + 1;
-    });
-  }
+  // updateNumbers no es necesario, el orden se actualiza al agregar/eliminar preguntas.
   
   static clearQuestions() {
     const container = document.getElementById('questionsList');
@@ -793,16 +854,27 @@ class SurveysManager {
     } catch (e) { console.error('Error al guardar encuesta:', e); Utils.showToast('Error al crear encuesta', 'error'); }
   }
   
-  static participate(id) {
+  static async participate(id) {
     const survey = allSurveys.find(s => s.id === id);
     if (!survey) { Utils.showToast('Encuesta no encontrada', 'error'); return; }
-    
+    const user = getCurrentUser();
+    if (!user) { Utils.showToast('Debes iniciar sesión para participar', 'error'); return; }
     const participationSection = document.getElementById('surveyParticipationSection');
     if (!participationSection) { Utils.showToast('Sección de participación no disponible', 'error'); return; }
-    
     document.querySelectorAll('.content-section').forEach(section => { section.classList.remove('active'); });
     participationSection.classList.add('active');
-    this.loadSurveyForParticipation(survey);
+    // Buscar si el usuario ya votó
+    let userResponse = null;
+    try {
+      const q = query(collection(db, 'respuestas_encuestas'), where('encuestaId', '==', id), where('participanteId', '==', user.uid));
+      const snap = await getDocs(q);
+      snap.forEach(d => { userResponse = { id: d.id, ...d.data() }; });
+    } catch (e) { userResponse = null; }
+    if (userResponse) {
+      await this.loadSurveyResults(survey, userResponse);
+    } else {
+      this.loadSurveyForParticipation(survey);
+    }
   }
   
   static loadSurveyForParticipation(survey) {
@@ -845,7 +917,29 @@ class SurveysManager {
     }
     
     const form = document.getElementById('surveyParticipationForm');
-    if (form) { form.onsubmit = (e) => { e.preventDefault(); this.submitSurveyResponse(survey); }; }
+    if (form) {
+      let submitBtn = form.querySelector('button[type="submit"]');
+      if (!submitBtn) {
+        submitBtn = document.createElement('button');
+        submitBtn.type = 'submit';
+        submitBtn.className = 'btn-primary';
+        submitBtn.innerHTML = '<span class="participate-icon">' + ModuleIcons.edit + '</span>Enviar respuesta';
+        form.appendChild(submitBtn);
+      } else {
+        submitBtn.disabled = false;
+        submitBtn.style.display = '';
+      }
+      form.onsubmit = (e) => {
+        e.preventDefault();
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = 'Enviando...';
+        this.submitSurveyResponse(survey).finally(() => {
+          submitBtn.innerHTML = '<span class="participate-icon">' + ModuleIcons.edit + '</span>Enviar respuesta';
+          submitBtn.disabled = true;
+          submitBtn.style.display = 'none';
+        });
+      };
+    }
     
     const cancelBtn = document.getElementById('cancelParticipation');
     if (cancelBtn) { cancelBtn.onclick = () => { document.getElementById('backToSurveysBtn').click(); }; }
@@ -855,9 +949,19 @@ class SurveysManager {
     try {
       const user = getCurrentUser();
       if (!user) { Utils.showToast('Debes iniciar sesión para participar', 'error'); return; }
-      
+      // Verificar si ya votó
+      let alreadyVoted = false;
+      try {
+        const q = query(collection(db, 'respuestas_encuestas'), where('encuestaId', '==', survey.id), where('participanteId', '==', user.uid));
+        const snap = await getDocs(q);
+        alreadyVoted = !snap.empty;
+      } catch (e) { alreadyVoted = false; }
+      if (alreadyVoted) {
+        Utils.showToast('Ya has respondido esta encuesta', 'warning');
+        this.participate(survey.id);
+        return;
+      }
       const responses = {}; let allAnswered = true;
-      
       survey.preguntas.forEach(question => {
         let value = null;
         if (question.tipo === 'multiple' || question.tipo === 'rating') {
@@ -869,20 +973,106 @@ class SurveysManager {
         }
         responses[question.id] = value;
       });
-      
       if (!allAnswered) { Utils.showToast('Por favor responde todas las preguntas', 'warning'); return; }
-      
       Utils.showToast('Enviando respuestas...', 'info');
-      
       const responseData = { encuestaId: survey.id, encuestaTitulo: survey.titulo, respuestas: responses, timestamp: serverTimestamp(), participanteId: user.uid, participanteNombre: user.displayName, participanteEmail: user.email };
       await addDoc(collection(db, 'respuestas_encuestas'), responseData);
-      
       const surveyRef = doc(db, 'encuestas', survey.id);
       await updateDoc(surveyRef, { respuestas: increment(1) });
-      
       Utils.showToast('¡Respuesta enviada exitosamente!', 'success');
-      setTimeout(() => { document.getElementById('backToSurveysBtn').click(); }, 1500);
+      // Mostrar resultados en tiempo real
+      setTimeout(() => { this.participate(survey.id); }, 1000);
     } catch (e) { console.error('Error al enviar respuesta:', e); Utils.showToast('Error al enviar respuesta', 'error'); }
+  }
+  // Mostrar resultados de la encuesta tras votar o si ya votó
+  static async loadSurveyResults(survey, userResponse) {
+    const titleEl = document.getElementById('surveyParticipationTitle'), descEl = document.getElementById('surveyParticipationDesc');
+    const infoTitle = document.getElementById('surveyInfoTitle'), infoDesc = document.getElementById('surveyInfoDescription');
+    const infoAuthor = document.getElementById('surveyInfoAuthor'), infoQuestions = document.getElementById('surveyInfoQuestions');
+    if (titleEl) titleEl.textContent = survey.titulo || 'Encuesta';
+    if (descEl) descEl.textContent = 'Resultados de la encuesta';
+    if (infoTitle) infoTitle.textContent = survey.titulo || 'Sin título';
+    if (infoDesc) infoDesc.textContent = survey.descripcion || 'Sin descripción';
+    if (infoAuthor) infoAuthor.textContent = `Por: ${survey.autorNombre || 'Anónimo'}`;
+    if (infoQuestions) infoQuestions.textContent = `Preguntas: ${survey.preguntas?.length || 0}`;
+    const questionsContainer = document.getElementById('surveyQuestionsContainer');
+    if (!questionsContainer || !survey.preguntas) return;
+    // Obtener todas las respuestas de la encuesta
+    let allResponses = [];
+    try {
+      const q = query(collection(db, 'respuestas_encuestas'), where('encuestaId', '==', survey.id));
+      const snap = await getDocs(q);
+      snap.forEach(d => { allResponses.push(d.data()); });
+    } catch (e) { allResponses = []; }
+    // Calcular resultados por pregunta
+    const results = survey.preguntas.map(q => {
+      const res = { ...q, conteo: {}, total: 0, respuestasTexto: [], suma: 0 };
+      if (q.tipo === 'multiple' || q.tipo === 'rating') {
+        q.opciones?.forEach(opt => { res.conteo[opt] = 0; });
+        if (q.tipo === 'rating') {
+          for (let i = 1; i <= 5; i++) res.conteo[i] = 0;
+        }
+      }
+      allResponses.forEach(r => {
+        const val = r.respuestas?.[q.id];
+        if (q.tipo === 'multiple' && val) { res.conteo[val] = (res.conteo[val] || 0) + 1; res.total++; }
+        else if (q.tipo === 'rating' && val) { res.conteo[val] = (res.conteo[val] || 0) + 1; res.suma += Number(val); res.total++; }
+        else if (q.tipo === 'text' && val) { res.respuestasTexto.push(val); res.total++; }
+      });
+      return res;
+    });
+    // Renderizar resultados
+    questionsContainer.innerHTML = results.map((q, idx) => {
+      let html = `<div class="survey-question-card"><div class="question-header"><span class="question-number">${idx + 1}</span><h4 class="question-text">${q.texto}</h4></div>`;
+      if (q.tipo === 'multiple') {
+        const total = q.total || 1;
+        html += '<div class="survey-results">';
+        q.opciones.forEach(opt => {
+          const count = q.conteo[opt] || 0;
+          const percent = Math.round((count / total) * 100);
+          const voted = userResponse.respuestas?.[q.id] === opt;
+          html += `<div class="result-bar-row${voted ? ' voted' : ''}"><span class="result-option">${opt}</span><div class="result-bar" style="width: ${percent}%; background: #10b981;">${percent}%</div><span class="result-count">${count} voto${count === 1 ? '' : 's'}</span></div>`;
+        });
+        html += '</div>';
+      } else if (q.tipo === 'rating') {
+        const total = q.total || 1;
+        html += '<div class="survey-results">';
+        for (let i = 1; i <= 5; i++) {
+          const count = q.conteo[i] || 0;
+          const percent = Math.round((count / total) * 100);
+          const voted = userResponse.respuestas?.[q.id] == i;
+          html += `<div class="result-bar-row${voted ? ' voted' : ''}"><span class="result-option">${i} ⭐</span><div class="result-bar" style="width: ${percent}%; background: #3b82f6;">${percent}%</div><span class="result-count">${count} voto${count === 1 ? '' : 's'}</span></div>`;
+        }
+        const promedio = q.total ? (q.suma / q.total).toFixed(2) : '0.00';
+        html += `<div class="result-average">Promedio: <b>${promedio}</b> / 5</div>`;
+        html += '</div>';
+      } else if (q.tipo === 'text') {
+        html += '<div class="survey-results-text">';
+        if (q.respuestasTexto.length) {
+          html += q.respuestasTexto.map((txt, i) => `<div class="result-text-item">${txt}</div>`).join('');
+        } else {
+          html += '<div class="result-text-item">Sin respuestas</div>';
+        }
+        html += '</div>';
+      }
+      html += '</div>';
+      return html;
+    }).join('');
+    // Botón volver
+    const backBtn = document.getElementById('backToSurveysBtn');
+    if (backBtn) {
+      backBtn.onclick = () => {
+        document.querySelectorAll('.content-section').forEach(section => { section.classList.remove('active'); });
+        document.getElementById('surveysSection').classList.add('active');
+        document.querySelectorAll('.nav-item').forEach(nav => { nav.classList.remove('active'); });
+        document.querySelector('[data-section="surveys"]').classList.add('active');
+      };
+    }
+    // Ocultar el formulario de participación si existe
+    const form = document.getElementById('surveyParticipationForm');
+    if (form) form.onsubmit = null;
+    const cancelBtn = document.getElementById('cancelParticipation');
+    if (cancelBtn) cancelBtn.onclick = () => { document.getElementById('backToSurveysBtn').click(); };
   }
   
   static deleteSurvey(id, title) {
@@ -928,9 +1118,17 @@ class OpinionsManager {
     }).join('');
   }
   
+  // getCategoryName solo aquí, no duplicar en otros managers.
   static getCategoryName(cat) {
-    const categories = { experiencia: 'Experiencia', pregunta: 'Pregunta', consejo: 'Consejo', debate: 'Debate', general: 'General' };
-    return categories[cat] || 'General';
+    // Personaliza los nombres de categorías de opiniones según tus necesidades
+    const categories = {
+      general: 'General',
+      sugerencia: 'Sugerencia',
+      critica: 'Crítica',
+      experiencia: 'Experiencia',
+      otro: 'Otro'
+    };
+    return categories[cat] || cat || 'Sin categoría';
   }
   
   static showOpinionForm() { const form = document.getElementById('opinionForm'); if (form) { form.style.display = 'block'; const title = document.getElementById('opinionTitle'); if (title) setTimeout(() => title.focus(), 100); } }

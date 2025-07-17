@@ -2384,3 +2384,36 @@ input:invalid, textarea:invalid {
     animation: none;
   }
 }
+
+.resource-item {
+  background: #f7fafd;
+  border-radius: 10px;
+  padding: 16px 18px;
+  margin-bottom: 18px;
+  box-shadow: 0 2px 12px 0 #e3f4ff69;
+}
+.resource-title {
+  font-size: 1.13rem;
+  font-weight: 600;
+  margin-bottom: 6px;
+}
+.resource-meta {
+  font-size: 0.95rem;
+  color: #64748b;
+  margin-bottom: 10px;
+}
+.btn-descargar {
+  display: inline-block;
+  padding: 8px 16px;
+  background: #00f5ff;
+  color: #222;
+  border-radius: 6px;
+  font-weight: 600;
+  text-decoration: none;
+  transition: background 0.2s;
+  border: none;
+  cursor: pointer;
+}
+.btn-descargar:hover {
+  background: #06d8e7;
+}
