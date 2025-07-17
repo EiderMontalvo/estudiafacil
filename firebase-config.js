@@ -53,25 +53,25 @@ provider.setCustomParameters({ prompt: 'select_account' });
 // Funciones principales
 const signInWithGoogle = async () => {
   try {
-    const result = await signInWithPopup(auth, provider);
-    
-    if (window.toggleSectionsForAuth) {
-      window.toggleSectionsForAuth(true);
+    // Usar popup solo en localhost, redirect en producción
+    const isLocalhost = ['localhost', '127.0.0.1'].includes(window.location.hostname);
+    if (isLocalhost) {
+      const result = await signInWithPopup(auth, provider);
+      if (window.toggleSectionsForAuth) window.toggleSectionsForAuth(true);
+      setTimeout(() => {
+        if (window.setActiveSection) window.setActiveSection('dashboard');
+      }, 100);
+      return result.user;
+    } else {
+      await signInWithRedirect(auth, provider);
+      // El usuario será redirigido, no hay resultado inmediato
+      return null;
     }
-    
-    setTimeout(() => {
-      if (window.setActiveSection) {
-        window.setActiveSection('dashboard');
-      }
-    }, 100);
-    
-    return result.user;
   } catch (error) {
     const messages = {
       'auth/popup-blocked': 'Popup bloqueado. Permite popups para este sitio.',
       'auth/network-request-failed': 'Error de conexión. Verifica tu internet.'
     };
-    
     if (window.Utils?.showToast) {
       window.Utils.showToast(messages[error.code] || 'Error al iniciar sesión', 'error');
     }
@@ -198,6 +198,9 @@ window.addEventListener('beforeunload', () => {
 });
 
 // Exportaciones globales
+// Hacer la función de login accesible globalmente
+window.signInWithGoogle = signInWithGoogle;
+
 export {
   auth,
   db,
