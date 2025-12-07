@@ -1,0 +1,56 @@
+# Configuración de Netlify
+[build]
+  publish = "."
+  
+# Headers de seguridad
+[[headers]]
+  for = "/*"
+  [headers.values]
+    X-Frame-Options = "DENY"
+    X-Content-Type-Options = "nosniff"
+    X-XSS-Protection = "1; mode=block"
+    Referrer-Policy = "strict-origin-when-cross-origin"
+    Permissions-Policy = "geolocation=(), microphone=(), camera=()"
+
+# Cache para recursos estáticos
+[[headers]]
+  for = "/src/css/*"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
+
+[[headers]]
+  for = "/src/img/*"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
+
+[[headers]]
+  for = "/recursos/*.pdf"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000"
+    Content-Type = "application/pdf"
+
+# Prevenir acceso a archivos sensibles
+[[redirects]]
+  from = "/.git/*"
+  to = "/404.html"
+  status = 404
+
+[[redirects]]
+  from = "/.env"
+  to = "/404.html"
+  status = 404
+
+[[redirects]]
+  from = "/backup_old/*"
+  to = "/404.html"
+  status = 404
+
+[[redirects]]
+  from = "/*-old.*"
+  to = "/404.html"
+  status = 404
+
+[[redirects]]
+  from = "/*.backup"
+  to = "/404.html"
+  status = 404

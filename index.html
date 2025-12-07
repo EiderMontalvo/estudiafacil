@@ -4,13 +4,16 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>EstudiaFácil - Plataforma Educativa</title>
-  <link rel="stylesheet" href="style.css">
-  <link rel="stylesheet" href="sections.css">
-  <link rel="stylesheet" href="components.css">
-  <link rel="stylesheet" href="navbar.css">
+  
+  <!-- CSS -->
+  <link rel="stylesheet" href="src/css/main.css">
+  
+  <!-- Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+
+  <!-- Meta -->
   <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>📚</text></svg>">
   <meta name="description" content="EstudiaFácil - Plataforma educativa colaborativa moderna">
   <meta name="theme-color" content="#00f5ff">
@@ -42,13 +45,10 @@
       <!-- Brand -->
       <div class="navbar-brand">
         <div class="brand-icon">
-          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <path d="M12 6.042A8.967 8.967 0 0 0 6 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 0 1 6 18c2.305 0 4.408.867 6 2.292m0-14.25A8.966 8.966 0 0 1 18 3.75c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0 0 18 18a8.967 8.967 0 0 0-6 2.292m0-14.25v14.25" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-          </svg>
+          📚
         </div>
         <h1 class="brand-title">EstudiaFácil</h1>
       </div>
-
       <!-- Auth -->
       <div class="navbar-auth">
         <button id="loginBtn" class="btn-login">
@@ -72,7 +72,7 @@
   </nav>
 
   <!-- Navegación de Contenido -->
-  <nav class="content-nav" id="contentNav">
+  <nav class="content-nav" id="contentNav" style="display: none;">
     <div class="nav-container">
       <button class="nav-item active" data-section="dashboard" title="Inicio">
         <div class="nav-icon">
@@ -264,8 +264,6 @@
           <select id="filterCategoria" class="filter-select">
             <option value="">Todas las categorías</option>
             <option value="apuntes">Apuntes</option>
-            <option value="examenes">Exámenes</option>
-            <option value="proyectos">Proyectos</option>
             <option value="libros">Libros</option>
           </select>
         </div>
@@ -273,7 +271,6 @@
 
       <div class="resources-grid">
         <div id="listaRecursos" class="resources-list"></div>
-        <div id="pdfRecursosContainer"></div>
         <div id="emptyState" class="empty-state" style="display: none;">
           <div class="empty-icon">📚</div>
           <h3>No hay recursos disponibles</h3>
@@ -284,7 +281,7 @@
 
     <!-- Surveys Section -->
     <section id="surveysSection" class="content-section">
-      <div class="section-header">
+        <div class="section-header">
         <div class="section-title-group">
           <h2>Encuestas Educativas</h2>
           <p>Cuestionarios interactivos para el aprendizaje</p>
@@ -327,9 +324,7 @@
         </div>
 
         <form id="surveyParticipationForm" class="survey-form">
-          <div id="surveyQuestionsContainer" class="survey-questions-container">
-            <!-- Las preguntas se cargarán dinámicamente aquí -->
-          </div>
+          <div id="surveyQuestionsContainer" class="survey-questions-container"></div>
           
           <div class="survey-form-actions">
             <button type="button" id="cancelParticipation" class="btn-secondary">Cancelar</button>
@@ -439,13 +434,7 @@
             </div>
             <div class="profile-info">
               <h3 id="profileName" class="profile-name">Usuario</h3>
-              <p id="profileEmail" class="profile-email">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                  <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                  <polyline points="22,6 12,13 2,6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                </svg>
-                email@ejemplo.com
-              </p>
+              <p id="profileEmail" class="profile-email">email@ejemplo.com</p>
             </div>
           </div>
           
@@ -520,19 +509,17 @@
               <select id="categoria" class="form-select" required>
                 <option value="">Seleccionar categoría</option>
                 <option value="apuntes">📝 Apuntes</option>
-                <option value="examenes">📊 Exámenes</option>
-                <option value="proyectos">🚀 Proyectos</option>
                 <option value="libros">📚 Libros</option>
               </select>
             </div>
             
             <div class="form-group">
               <label for="materia" class="form-label">Materia *</label>
-              <input type="text" id="materia" class="form-input" placeholder="Ej: Matemáticas, Historia..." required>
+              <select id="materia" class="form-select" required>
+                <option value="">Seleccionar materia</option>
+              </select>
             </div>
           </div>
-
-
 
           <div class="form-group">
             <label for="descripcion" class="form-label">Descripción</label>
@@ -687,140 +674,6 @@
 
   <!-- Scripts -->
   <script src="https://ucarecdn.com/libs/widget/3.x/uploadcare.full.min.js" async></script>
-  <script type="module" src="firebase-config.js"></script>
-  <script type="module" src="main.js"></script>
-  <script type="module" src="modules.js"></script>
-  <script type="module" src="navbar.js"></script>
-
-  <script>
-
-    // Navegación y UI básica
-    document.addEventListener('DOMContentLoaded', function() {
-      const navItems = document.querySelectorAll('.nav-item');
-      function setActiveSection(sectionId) {
-        document.querySelectorAll('.content-section').forEach(s => s.classList.remove('active'));
-        document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
-        const section = document.getElementById(sectionId + 'Section');
-        if (section) section.classList.add('active');
-        const navItem = document.querySelector(`[data-section="${sectionId}"]`);
-        if (navItem) navItem.classList.add('active');
-        localStorage.setItem('activeSection', sectionId);
-      }
-      navItems.forEach(item => {
-        item.addEventListener('click', function() {
-          const section = this.dataset.section;
-          if (section) setActiveSection(section);
-        });
-      });
-      const savedSection = localStorage.getItem('activeSection') || 'dashboard';
-      setActiveSection(savedSection);
-      // Configurar botón hero login CORREGIDO
-      const heroLoginBtn = document.getElementById('heroLoginBtn');
-      if (heroLoginBtn) {
-        heroLoginBtn.addEventListener('click', handleHeroLogin);
-      }
-      // Asignar evento seguro al botón de login
-      const loginBtn = document.getElementById('loginBtn');
-      if (loginBtn) {
-        loginBtn.addEventListener('click', function(e) {
-          e.preventDefault();
-          if (window.signInWithGoogle) {
-            window.signInWithGoogle();
-          }
-        });
-      }
-    });
-
-    // FUNCIÓN HERO LOGIN CORREGIDA
-    function handleHeroLogin() {
-      console.log('🚀 Hero login clicked');
-      
-      try {
-        // Verificar si ya está logueado
-        if (window.getCurrentUser && window.getCurrentUser()) {
-          console.log('✅ User already logged in, navigating to dashboard');
-          setActiveSection('dashboard');
-          return;
-        }
-        
-        // Intentar login directo con Firebase
-        if (window.signInWithGoogle) {
-          console.log('🔑 Executing Google login directly');
-          window.signInWithGoogle()
-            .then(user => {
-              console.log('✅ Login successful:', user);
-              setActiveSection('dashboard');
-            })
-            .catch(error => {
-              console.error('❌ Login error:', error);
-              showToast('Error al iniciar sesión. Intenta de nuevo.', 'error');
-            });
-        } else if (window.auth && window.auth.signInWithGoogle) {
-          console.log('🔑 Executing auth.signInWithGoogle');
-          window.auth.signInWithGoogle();
-        } else {
-          console.log('⚠️ No direct auth function found, trying login button click');
-          const loginBtn = document.getElementById('loginBtn');
-          if (loginBtn) {
-            loginBtn.click();
-          } else {
-            console.error('❌ No login method available');
-            showToast('Sistema de autenticación no disponible', 'error');
-          }
-        }
-      } catch (error) {
-        console.error('❌ Error in handleHeroLogin:', error);
-        showToast('Error inesperado. Intenta de nuevo.', 'error');
-      }
-    }
-
-    // Función helper para cambiar sección
-    function setActiveSection(sectionId) {
-      document.querySelectorAll('.content-section').forEach(s => s.classList.remove('active'));
-      document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
-      
-      const section = document.getElementById(sectionId + 'Section');
-      if (section) section.classList.add('active');
-      
-      const navItem = document.querySelector(`[data-section="${sectionId}"]`);
-      if (navItem) navItem.classList.add('active');
-      
-      localStorage.setItem('activeSection', sectionId);
-    }
-
-    // Función helper para mostrar toast
-    function showToast(message, type = 'info') {
-      if (window.showToast) {
-        window.showToast(message, type);
-      } else {
-        console.log(`Toast ${type}: ${message}`);
-      }
-    }
-
-    function toggleSectionsForAuth(isLoggedIn) {
-      const welcomeHero = document.getElementById('welcomeHero');
-      const dashboardContent = document.getElementById('dashboardContent');
-      const contentNav = document.getElementById('contentNav');
-      const userProfile = document.getElementById('userProfile');
-      const loginBtn = document.getElementById('loginBtn');
-      
-      if (welcomeHero) welcomeHero.style.display = isLoggedIn ? 'none' : 'block';
-      if (dashboardContent) dashboardContent.style.display = isLoggedIn ? 'block' : 'none';
-      if (contentNav) contentNav.style.display = isLoggedIn ? 'block' : 'none';
-      if (userProfile) userProfile.style.display = isLoggedIn ? 'flex' : 'none';
-      if (loginBtn) loginBtn.style.display = isLoggedIn ? 'none' : 'flex';
-    }
-    
-    function updateAuthStatus(status) {
-      // Función placeholder para compatibilidad
-      console.log('Auth status:', status);
-    }
-    
-    // Exportar funciones globalmente
-    window.toggleSectionsForAuth = toggleSectionsForAuth;
-    window.updateAuthStatus = updateAuthStatus;
-    window.handleHeroLogin = handleHeroLogin;
-    window.setActiveSection = setActiveSection;
-  </script>
+  <script type="module" src="src/js/app.js"></script>
 </body>
 </html>
