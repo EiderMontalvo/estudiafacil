@@ -1,0 +1,123 @@
+/* Variables CSS - Sistema de diseño completo */
+:root {
+  /* Paleta principal */
+  --primary: #6366f1;
+  --primary-hover: #4338ca;
+  --secondary: #06b6d4;
+  --accent: #f59e0b;
+  
+  /* Grises */
+  --white: #ffffff;
+  --gray-50: #f8fafc;
+  --gray-100: #f1f5f9;
+  --gray-200: #e2e8f0;
+  --gray-300: #cbd5e1;
+  --gray-400: #94a3b8;
+  --gray-500: #64748b;
+  --gray-600: #475569;
+  --gray-700: #334155;
+  --gray-800: #1e293b;
+  --gray-900: #0f172a;
+  
+  /* Estados */
+  --success: #10b981;
+  --warning: #f59e0b;
+  --error: #ef4444;
+  --info: #3b82f6;
+  
+  /* Backgrounds */
+  --bg-primary: var(--white);
+  --bg-secondary: var(--gray-50);
+  --bg-card: var(--white);
+  --bg-overlay: rgba(15, 23, 42, 0.75);
+  
+  /* Gradientes */
+  --gradient-primary: linear-gradient(135deg, #6366f1 0%, #06b6d4 100%);
+  --gradient-card: linear-gradient(135deg, rgba(255,255,255,0.95) 0%, rgba(248,250,252,0.98) 100%);
+  --gradient-hero: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  
+  /* Texto */
+  --text-primary: var(--gray-900);
+  --text-secondary: var(--gray-700);
+  --text-muted: var(--gray-500);
+  --text-white: var(--white);
+  
+  /* Bordes */
+  --border: var(--gray-200);
+  --border-light: var(--gray-100);
+  --border-focus: var(--primary);
+  
+  /* Radius */
+  --radius-sm: 6px;
+  --radius: 10px;
+  --radius-lg: 14px;
+  --radius-xl: 18px;
+  --radius-2xl: 22px;
+  --radius-full: 9999px;
+  
+  /* Sombras */
+  --shadow-sm: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
+  --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+  --shadow-md: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+  --shadow-lg: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+  --shadow-xl: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+  
+  /* Espaciado */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+  --space-8: 32px;
+  --space-10: 40px;
+  --space-12: 48px;
+  --space-16: 64px;
+  
+  /* Transiciones */
+  --transition: all 0.2s ease;
+  
+  /* Z-index */
+  --z-modal: 5000;
+  --z-toast: 6000;
+  --z-navbar: 1000;
+  --z-nav-content: 500;
+  --z-loading: 9999;
+  
+  /* Navbar */
+  --nav-height: 56px;
+  --content-nav-height: 64px;
+  
+  /* Neon colors */
+  --neon-cyan: #00f5ff;
+  --neon-pink: #ff1493;
+  --neon-green: #39ff14;
+  
+  /* Glass effect */
+  --glass-bg: rgba(30, 41, 59, 0.9);
+  --glass-border: rgba(99, 102, 241, 0.3);
+  --glass-blur: blur(12px);
+}
+
+/* Dark mode automático */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg-primary: #0f172a;
+    --bg-secondary: #1e293b;
+    --bg-card: rgba(15, 23, 42, 0.95);
+    --text-primary: #f8fafc;
+    --text-secondary: #e2e8f0;
+    --text-muted: #94a3b8;
+    --border: #334155;
+    --border-light: #475569;
+  }
+}
+
+/* High contrast mode */
+@media (prefers-contrast: high) {
+  :root {
+    --border: #000000;
+    --border-light: #333333;
+    --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3);
+  }
+}

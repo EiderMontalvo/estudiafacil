@@ -1,0 +1,132 @@
+/* Footer */
+.footer {
+  background: var(--gradient-hero);
+  color: var(--text-white);
+  margin-top: var(--space-6) !important;
+  margin-bottom: 0 !important;
+  padding: var(--space-6) 0 var(--space-4);
+  position: relative;
+}
+
+.footer::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: var(--gradient-primary);
+}
+
+.footer-container {
+  max-width: 1000px;
+  margin: 0 auto;
+  padding: 0 var(--space-4);
+}
+
+.footer-content {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: var(--space-5);
+  align-items: center;
+  margin-bottom: var(--space-4);
+}
+
+.footer-brand {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.footer-logo {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.footer-icon {
+  font-size: 1.5rem;
+}
+
+.footer-title {
+  font-size: 1.2rem;
+  font-weight: 800;
+}
+
+.footer-description {
+  opacity: 0.9;
+  line-height: 1.4;
+  font-size: 0.85rem;
+  font-weight: 500;
+  max-width: 350px;
+}
+
+.footer-stats {
+  display: flex;
+  gap: var(--space-4);
+}
+
+.footer-stat {
+  text-align: center;
+  padding: var(--space-2);
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: var(--radius);
+  min-width: 70px;
+  transition: var(--transition);
+}
+
+.footer-stat:hover {
+  background: rgba(255, 255, 255, 0.15);
+  transform: translateY(-1px);
+}
+
+.footer-stat .stat-number {
+  font-size: 1.4rem;
+  font-weight: 800;
+  margin-bottom: var(--space-1);
+  display: block;
+}
+
+.footer-stat .stat-label {
+  font-size: 0.7rem;
+  opacity: 0.9;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
+.footer-bottom {
+  text-align: center;
+  padding-top: var(--space-3);
+  border-top: 1px solid rgba(255, 255, 255, 0. 2);
+}
+
+.footer-bottom p {
+  opacity: 0.8;
+  font-size: 0.8rem;
+  font-weight: 500;
+  margin: 0;
+}
+
+/* Responsive */
+@media (max-width: 767px) {
+  .footer {
+    padding: var(--space-5) 0 var(--space-2);
+    margin-bottom: 0 !important;
+  }
+  
+  /* Solo agregar margen cuando el usuario esté logueado */
+  body.user-logged-in .footer {
+    margin-bottom: var(--content-nav-height) !important;
+  }
+  
+  .footer-content {
+    grid-template-columns: 1fr;
+    gap: var(--space-4);
+    text-align: center;
+  }
+  
+  .footer-stats {
+    justify-content: center;
+    gap: var(--space-3);
+  }
+}
